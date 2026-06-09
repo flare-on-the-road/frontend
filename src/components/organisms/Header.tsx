@@ -44,10 +44,11 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <Button
+            asChild
             variant="outline"
             className="h-11 rounded-full border-flare-500 bg-transparent px-6 font-bold text-flare-600 hover:bg-flare-500 hover:text-cream-50 dark:border-flare-400 dark:text-flare-400 dark:hover:bg-flare-500 dark:hover:text-slate-900"
           >
-            로그인
+            <Link href="/login">로그인</Link>
           </Button>
           <ThemeToggle />
         </div>
