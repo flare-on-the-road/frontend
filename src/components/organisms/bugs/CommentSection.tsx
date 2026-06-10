@@ -33,9 +33,14 @@ export function CommentSection({ postId, accessToken }: CommentSectionProps) {
       .finally(() => setIsLoading(false));
   }, [accessToken, postId]);
 
+  const loadedKeyRef = React.useRef<string | null>(null);
+
   React.useEffect(() => {
+    const key = `${accessToken}:${postId}`;
+    if (loadedKeyRef.current === key) return;
+    loadedKeyRef.current = key;
     load();
-  }, [load]);
+  }, [load, accessToken, postId]);
 
   return (
     <Card className="rounded-xl border-warm-200 bg-warm-50 dark:border-slate-700 dark:bg-slate-800">

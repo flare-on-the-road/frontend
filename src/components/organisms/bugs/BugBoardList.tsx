@@ -32,8 +32,14 @@ export function BugBoardList() {
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true);
 
+  const fetchedKeyRef = React.useRef<string | null>(null);
+
   React.useEffect(() => {
     if (!isReady || !accessToken) return;
+
+    const key = `${accessToken}:${page}:${keywordParam}:${searchTypeParam}`;
+    if (fetchedKeyRef.current === key) return;
+    fetchedKeyRef.current = key;
 
     let cancelled = false;
 

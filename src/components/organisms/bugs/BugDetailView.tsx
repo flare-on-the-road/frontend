@@ -48,8 +48,15 @@ export function BugDetailView() {
       .finally(() => setIsLoading(false));
   }, [accessToken, postId]);
 
+  const loadedKeyRef = React.useRef<string | null>(null);
+
   React.useEffect(() => {
     if (!isReady || !accessToken || Number.isNaN(postId)) return;
+
+    const key = `${accessToken}:${postId}`;
+    if (loadedKeyRef.current === key) return;
+    loadedKeyRef.current = key;
+
     loadPost();
   }, [isReady, accessToken, postId, loadPost]);
 
