@@ -7,13 +7,15 @@ import * as React from "react";
 import { Button } from "@/components/atoms";
 import { FormField } from "@/components/molecules";
 import { SocialLoginButtons } from "@/components/organisms/SocialLoginButtons";
-import { login, saveAuthSession } from "@/services/authApi";
+import { login } from "@/services/authApi";
+import { useAuthStore } from "@/stores/authStore";
 
 const SAVED_EMAIL_KEY = "savedLoginEmail";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const setSession = useAuthStore((state) => state.setSession);
   const [error, setError] = React.useState("");
   const [isPending, startTransition] = React.useTransition();
   const savedEmail =
@@ -34,7 +36,7 @@ export function LoginForm() {
     startTransition(async () => {
       try {
         const auth = await login({ email, password });
-        saveAuthSession(auth);
+        setSession(auth);
 
         if (rememberEmail) {
           window.localStorage.setItem(SAVED_EMAIL_KEY, email);

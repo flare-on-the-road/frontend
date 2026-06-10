@@ -1,7 +1,11 @@
-import { ClipboardList, Info } from "lucide-react";
+"use client";
+
+import { ClipboardList, Info, LogOut, UserCircle } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button, Logo, ThemeToggle } from "@/components/atoms";
+import { useAuthStore } from "@/stores/authStore";
 
 const flareMenuItems = [
   { label: "프로젝트 개요", href: "/overview" },
@@ -17,6 +21,15 @@ const boardMenuItems = [
 ];
 
 export function Header() {
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+
+  function handleLogout() {
+    logout();
+    router.push("/");
+  }
+
   return (
     <header className="group/header sticky top-0 z-20 border-b border-warm-200 bg-cream-50/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
       <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
@@ -43,13 +56,48 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button
-            asChild
-            variant="outline"
-            className="h-11 rounded-full border-flare-500 bg-transparent px-6 font-bold text-flare-600 hover:bg-flare-500 hover:text-cream-50 dark:border-flare-400 dark:text-flare-400 dark:hover:bg-flare-500 dark:hover:text-slate-900"
-          >
-            <Link href="/login">로그인</Link>
-          </Button>
+          {user ? (
+            <div className="flex min-w-0 items-center gap-2 rounded-full border border-warm-200 bg-cream-100 px-2.5 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-flare-500 text-sm font-black text-cream-50">
+                {getInitial(user.name)}
+              </div>
+              <div className="hidden min-w-0 leading-tight sm:block">
+                <div className="flex items-center gap-2">
+                  <span className="max-w-28 truncate text-sm font-black text-slate-900 dark:text-cream-50 lg:max-w-36">
+                    {user.name}
+                  </span>
+                  <span className="rounded-full bg-process-resolved/15 px-2 py-0.5 text-[11px] font-black text-process-resolved">
+                    로그인됨
+                  </span>
+                </div>
+                <p className="max-w-44 truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
+                  {user.email}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-9 rounded-full text-slate-600 hover:bg-warm-100 hover:text-flare-600 dark:text-warm-200 dark:hover:bg-slate-700"
+                aria-label="로그아웃"
+                title="로그아웃"
+                onClick={handleLogout}
+              >
+                <LogOut className="size-5" aria-hidden="true" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              asChild
+              variant="outline"
+              className="h-11 rounded-full border-flare-500 bg-transparent px-6 font-bold text-flare-600 hover:bg-flare-500 hover:text-cream-50 dark:border-flare-400 dark:text-flare-400 dark:hover:bg-flare-500 dark:hover:text-slate-900"
+            >
+              <Link href="/login">
+                <UserCircle className="size-5" aria-hidden="true" />
+                로그인
+              </Link>
+            </Button>
+          )}
           <ThemeToggle />
         </div>
       </div>
@@ -93,4 +141,8 @@ export function Header() {
       </div>
     </header>
   );
+}
+
+function getInitial(name: string) {
+  return name.trim().charAt(0).toUpperCase() || "U";
 }

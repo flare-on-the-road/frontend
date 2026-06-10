@@ -1,18 +1,6 @@
-export type AuthUser = {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  provider: string;
-  department?: string | null;
-  phone?: string | null;
-};
+import type { AuthResponse, AuthUser } from "@/types/auth";
 
-export type AuthResponse = {
-  accessToken: string;
-  refreshToken: string;
-  user: AuthUser;
-};
+export type { AuthResponse, AuthUser } from "@/types/auth";
 
 type ApiEnvelope<T> = {
   success: boolean;
@@ -74,10 +62,13 @@ export async function forgotPassword(payload: {
   });
 }
 
-export function saveAuthSession(auth: AuthResponse) {
-  window.localStorage.setItem("accessToken", auth.accessToken);
-  window.localStorage.setItem("refreshToken", auth.refreshToken);
-  window.localStorage.setItem("user", JSON.stringify(auth.user));
+export async function getCurrentUser(accessToken: string) {
+  return request<AuthUser>("/auth/me", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 }
 
 async function request<T>(path: string, init: RequestInit) {

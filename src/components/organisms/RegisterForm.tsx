@@ -6,10 +6,12 @@ import * as React from "react";
 
 import { Button } from "@/components/atoms";
 import { FormField } from "@/components/molecules";
-import { register, saveAuthSession } from "@/services/authApi";
+import { register } from "@/services/authApi";
+import { useAuthStore } from "@/stores/authStore";
 
 export function RegisterForm() {
   const router = useRouter();
+  const setSession = useAuthStore((state) => state.setSession);
   const [error, setError] = React.useState("");
   const [isPending, startTransition] = React.useTransition();
 
@@ -35,7 +37,7 @@ export function RegisterForm() {
           department: String(formData.get("department") ?? ""),
           phone: String(formData.get("phone") ?? ""),
         });
-        saveAuthSession(auth);
+        setSession(auth);
         router.push("/");
       } catch (err) {
         setError(err instanceof Error ? err.message : "회원가입에 실패했습니다.");
