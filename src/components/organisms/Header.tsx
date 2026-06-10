@@ -17,7 +17,7 @@ const boardMenuItems = [
   { label: "공지사항", href: "#notice" },
   { label: "자주 묻는 질문", href: "#faq" },
   { label: "1:1 문의", href: "#contact" },
-  { label: "버그 게시판", href: "#bugs" },
+  { label: "버그 게시판", href: "/bugs" },
   { label: "자료 게시판", href: "#resources" },
 ];
 

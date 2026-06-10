@@ -10,4 +10,5 @@ export {
 } from "./Card";
 export { Input } from "./Input";
 export { Logo } from "./Logo";
+export { Textarea } from "./Textarea";
 export { ThemeToggle } from "./ThemeToggle";
