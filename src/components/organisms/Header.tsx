@@ -3,6 +3,7 @@
 import { ClipboardList, Info, LogOut, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { Button, Logo, ThemeToggle } from "@/components/atoms";
 import { useAuthStore } from "@/stores/authStore";
@@ -34,28 +35,26 @@ export function Header() {
   }
 
   return (
-    <header className="group/header sticky top-0 z-20 border-b border-warm-200 bg-cream-50/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+    <header className="sticky top-0 z-20 border-b border-warm-200 bg-cream-50/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
       <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
         <Logo />
 
         <nav
-          className="hidden items-center gap-14 text-sm font-black text-slate-900 dark:text-cream-100 md:flex"
+          className="hidden h-full items-center gap-14 text-sm font-black text-slate-900 dark:text-cream-100 md:flex"
           aria-label="Primary navigation"
         >
-          <Link
-            className="flex h-[76px] items-center gap-3 transition-colors hover:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:hover:text-flare-400"
+          <HeaderMenu
+            icon={<Info className="size-6" aria-hidden="true" />}
+            label="Flare"
             href="/#about"
-          >
-            <Info className="size-6" aria-hidden="true" />
-            Flare
-          </Link>
-          <Link
-            className="flex h-[76px] items-center gap-3 transition-colors hover:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:hover:text-flare-400"
+            items={flareMenuItems}
+          />
+          <HeaderMenu
+            icon={<ClipboardList className="size-6" aria-hidden="true" />}
+            label="게시판"
             href="/#process"
-          >
-            <ClipboardList className="size-6" aria-hidden="true" />
-            게시판
-          </Link>
+            items={boardMenuItems}
+          />
         </nav>
 
         <div className="flex items-center gap-3">
@@ -115,34 +114,6 @@ export function Header() {
         </div>
       </div>
 
-      <div className="hidden border-t border-warm-200 bg-warm-50/98 shadow-sm transition-[max-height,opacity] duration-200 group-focus-within/header:block group-hover/header:block dark:border-slate-700 dark:bg-slate-800/98 md:block md:max-h-0 md:overflow-hidden md:opacity-0 md:group-focus-within/header:max-h-96 md:group-focus-within/header:opacity-100 md:group-hover/header:max-h-96 md:group-hover/header:opacity-100">
-        <div className="mx-auto grid max-w-[560px] grid-cols-2 gap-12 px-8 py-7 text-center">
-          <div className="space-y-5">
-            {flareMenuItems.map((item) => (
-              <Link
-                key={item.label}
-                className="block text-base font-bold text-slate-800 transition-colors hover:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:text-cream-100 dark:hover:text-flare-400"
-                href={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-
-          <div className="space-y-5">
-            {boardMenuItems.map((item) => (
-              <Link
-                key={item.label}
-                className="block text-base font-bold text-slate-800 transition-colors hover:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:text-cream-100 dark:hover:text-flare-400"
-                href={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
       <div className="border-t border-warm-200 bg-warm-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-800 md:hidden">
         <div className="grid grid-cols-2 gap-3 text-sm font-bold text-slate-700 dark:text-warm-200">
           {[...flareMenuItems, ...boardMenuItems].map((item) => (
@@ -153,6 +124,44 @@ export function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function HeaderMenu({
+  icon,
+  label,
+  href,
+  items,
+}: {
+  icon: ReactNode;
+  label: string;
+  href: string;
+  items: Array<{ label: string; href: string }>;
+}) {
+  return (
+    <div className="group/menu relative flex h-full items-center">
+      <Link
+        className="flex h-[76px] items-center gap-3 whitespace-nowrap transition-colors hover:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:hover:text-flare-400"
+        href={href}
+      >
+        {icon}
+        {label}
+      </Link>
+
+      <div className="absolute left-1/2 top-full hidden min-w-max -translate-x-1/2 border border-warm-200 bg-warm-50/98 px-7 py-5 text-center shadow-sm transition-[max-height,opacity] duration-200 group-focus-within/menu:block group-hover/menu:block dark:border-slate-700 dark:bg-slate-800/98 md:block md:max-h-0 md:overflow-hidden md:opacity-0 md:group-focus-within/menu:max-h-96 md:group-focus-within/menu:opacity-100 md:group-hover/menu:max-h-96 md:group-hover/menu:opacity-100">
+        <div className="space-y-4">
+          {items.map((item) => (
+            <Link
+              key={item.label}
+              className="block whitespace-nowrap text-base font-bold text-slate-800 transition-colors hover:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:text-cream-100 dark:hover:text-flare-400"
+              href={item.href}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
