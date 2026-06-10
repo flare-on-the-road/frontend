@@ -66,8 +66,11 @@ export function Header() {
                   <span className="max-w-28 truncate text-sm font-black text-slate-900 dark:text-cream-50 lg:max-w-36">
                     {user.name}
                   </span>
-                  <span className="rounded-full bg-process-resolved/15 px-2 py-0.5 text-[11px] font-black text-process-resolved">
-                    로그인됨
+                  <span
+                    className="max-w-28 truncate rounded-full bg-process-resolved/15 px-2 py-0.5 text-[11px] font-black text-process-resolved lg:max-w-36"
+                    title={getProviderLoginLabel(user.provider)}
+                  >
+                    {getProviderLoginLabel(user.provider)}
                   </span>
                 </div>
                 <p className="max-w-44 truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
@@ -145,4 +148,15 @@ export function Header() {
 
 function getInitial(name: string) {
   return name.trim().charAt(0).toUpperCase() || "U";
+}
+
+function getProviderLoginLabel(provider: string) {
+  const providerLabels: Record<string, string> = {
+    google: "구글로 로그인됨",
+    kakao: "카카오로 로그인됨",
+    naver: "네이버로 로그인됨",
+    local: "이메일로 로그인됨",
+  };
+
+  return providerLabels[provider.toLowerCase()] ?? "로그인됨";
 }
