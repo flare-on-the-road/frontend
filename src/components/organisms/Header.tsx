@@ -46,13 +46,11 @@ export function Header() {
           <HeaderMenu
             icon={<Info className="size-6" aria-hidden="true" />}
             label="Flare"
-            href="/#about"
             items={flareMenuItems}
           />
           <HeaderMenu
             icon={<ClipboardList className="size-6" aria-hidden="true" />}
             label="게시판"
-            href="/#process"
             items={boardMenuItems}
           />
         </nav>
@@ -130,23 +128,22 @@ export function Header() {
 function HeaderMenu({
   icon,
   label,
-  href,
   items,
 }: {
   icon: ReactNode;
   label: string;
-  href: string;
   items: Array<{ label: string; href: string }>;
 }) {
   return (
     <div className="group/menu relative flex h-full items-center">
-      <Link
-        className="flex h-[76px] items-center gap-3 whitespace-nowrap transition-colors hover:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:hover:text-flare-400"
-        href={href}
+      <button
+        className="flex h-[76px] cursor-default items-center gap-3 whitespace-nowrap bg-transparent transition-colors group-hover/menu:text-flare-600 focus-visible:text-flare-600 focus-visible:outline-none dark:group-hover/menu:text-flare-400"
+        type="button"
+        aria-haspopup="menu"
       >
         {icon}
         {label}
-      </Link>
+      </button>
 
       <div className="absolute left-1/2 top-full hidden min-w-max -translate-x-1/2 border border-warm-200 bg-warm-50/98 px-7 py-5 text-center shadow-sm transition-[max-height,opacity] duration-200 group-focus-within/menu:block group-hover/menu:block dark:border-slate-700 dark:bg-slate-800/98 md:block md:max-h-0 md:overflow-hidden md:opacity-0 md:group-focus-within/menu:max-h-96 md:group-focus-within/menu:opacity-100 md:group-hover/menu:max-h-96 md:group-hover/menu:opacity-100">
         <div className="space-y-4">
