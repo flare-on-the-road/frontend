@@ -58,25 +58,31 @@ export function Header() {
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex min-w-0 items-center gap-2 rounded-full border border-warm-200 bg-cream-100 px-2.5 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-flare-500 text-sm font-black text-cream-50">
-                {getInitial(user.name)}
-              </div>
-              <div className="hidden min-w-0 leading-tight sm:block">
-                <div className="flex items-center gap-2">
-                  <span className="max-w-28 truncate text-sm font-black text-slate-900 dark:text-cream-50 lg:max-w-36">
-                    {user.name}
-                  </span>
-                  <span
-                    className="max-w-28 truncate rounded-full bg-process-resolved/15 px-2 py-0.5 text-[11px] font-black text-process-resolved lg:max-w-36"
-                    title={getProviderLoginLabel(user.provider)}
-                  >
-                    {getProviderLoginLabel(user.provider)}
-                  </span>
+              <Link
+                href="/my-page"
+                className="flex min-w-0 items-center gap-2 rounded-full outline-none focus-visible:ring-[3px] focus-visible:ring-flare-400/40"
+                aria-label="마이페이지로 이동"
+              >
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-flare-500 text-sm font-black text-cream-50">
+                  {getInitial(user.name)}
                 </div>
-                <p className="max-w-44 truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
-                  {user.email}
-                </p>
-              </div>
+                <div className="hidden min-w-0 leading-tight sm:block">
+                  <div className="flex items-center gap-2">
+                    <span className="max-w-28 truncate text-sm font-black text-slate-900 dark:text-cream-50 lg:max-w-36">
+                      {user.name}
+                    </span>
+                    <span
+                      className="max-w-28 truncate rounded-full bg-process-resolved/15 px-2 py-0.5 text-[11px] font-black text-process-resolved lg:max-w-36"
+                      title={getProviderLoginLabel(user.provider)}
+                    >
+                      {getProviderLoginLabel(user.provider)}
+                    </span>
+                  </div>
+                  <p className="max-w-44 truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
+                    {user.email}
+                  </p>
+                </div>
+              </Link>
               <Button
                 type="button"
                 variant="ghost"

@@ -13,3 +13,9 @@ export type AuthResponse = {
   refreshToken: string;
   user: AuthUser;
 };
+
+export type UpdateProfilePayload = {
+  name: string;
+  department?: string;
+  phone?: string;
+};

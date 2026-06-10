@@ -7,8 +7,12 @@ import {
   type StateStorage,
 } from "zustand/middleware";
 
-import { getCurrentUser } from "@/services/authApi";
-import type { AuthResponse, AuthUser } from "@/types/auth";
+import { getCurrentUser, updateCurrentUserProfile } from "@/services/authApi";
+import type {
+  AuthResponse,
+  AuthUser,
+  UpdateProfilePayload,
+} from "@/types/auth";
 
 type AuthStatus = "idle" | "authenticated" | "unauthenticated";
 
@@ -24,6 +28,7 @@ type AuthState = {
     refreshToken?: string | null;
   }) => void;
   fetchCurrentUser: () => Promise<AuthUser>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
   logout: () => void;
   setHydrated: (isHydrated: boolean) => void;
 };
@@ -134,6 +139,18 @@ export const useAuthStore = create<AuthState>()(
         }
 
         const user = await getCurrentUser(accessToken);
+        set({ user, status: "authenticated" });
+        return user;
+      },
+      updateProfile: async (payload) => {
+        const { accessToken } = get();
+
+        if (!accessToken) {
+          set({ status: "unauthenticated", user: null });
+          throw new Error("로그인이 필요합니다.");
+        }
+
+        const user = await updateCurrentUserProfile(accessToken, payload);
         set({ user, status: "authenticated" });
         return user;
       },

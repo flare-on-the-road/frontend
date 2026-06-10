@@ -1,6 +1,10 @@
-import type { AuthResponse, AuthUser } from "@/types/auth";
+import type {
+  AuthResponse,
+  AuthUser,
+  UpdateProfilePayload,
+} from "@/types/auth";
 
-export type { AuthResponse, AuthUser } from "@/types/auth";
+export type { AuthResponse, AuthUser, UpdateProfilePayload } from "@/types/auth";
 
 type ApiEnvelope<T> = {
   success: boolean;
@@ -63,11 +67,24 @@ export async function forgotPassword(payload: {
 }
 
 export async function getCurrentUser(accessToken: string) {
-  return request<AuthUser>("/auth/me", {
+  return request<AuthUser>("/users/me", {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
+  });
+}
+
+export async function updateCurrentUserProfile(
+  accessToken: string,
+  payload: UpdateProfilePayload,
+) {
+  return request<AuthUser>("/users/me", {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
   });
 }
 
