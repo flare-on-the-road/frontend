@@ -45,8 +45,6 @@ export function NoticeBoardList() {
     if (fetchedKeyRef.current === key) return;
     fetchedKeyRef.current = key;
 
-    let cancelled = false;
-
     fetchPosts(accessToken, {
       page,
       size: PAGE_SIZE,
@@ -55,26 +53,19 @@ export function NoticeBoardList() {
       boardType: "notice",
     })
       .then((res) => {
-        if (cancelled) return;
         setData(res);
         setError("");
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(
-            err instanceof ApiRequestError
-              ? err.message
-              : "게시글을 불러오지 못했습니다.",
-          );
-        }
+        setError(
+          err instanceof ApiRequestError
+            ? err.message
+            : "게시글을 불러오지 못했습니다.",
+        );
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        setIsLoading(false);
       });
-
-    return () => {
-      cancelled = true;
-    };
   }, [isReady, accessToken, page, keywordParam, searchTypeParam]);
 
   function updateQuery(next: {

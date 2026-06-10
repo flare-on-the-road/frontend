@@ -34,12 +34,8 @@ export function NoticePostForm({ mode, postId }: NoticePostFormProps) {
   React.useEffect(() => {
     if (!isReady || !accessToken || mode !== "edit" || !postId) return;
 
-    let cancelled = false;
-
     fetchPostDetail(accessToken, postId)
       .then((post) => {
-        if (cancelled) return;
-
         if (!post.permissions.can_edit) {
           setError("수정 권한이 없습니다.");
           return;
@@ -50,19 +46,13 @@ export function NoticePostForm({ mode, postId }: NoticePostFormProps) {
         setIsImportant(post.is_important);
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(
-            err instanceof ApiRequestError ? err.message : "게시글을 불러오지 못했습니다.",
-          );
-        }
+        setError(
+          err instanceof ApiRequestError ? err.message : "게시글을 불러오지 못했습니다.",
+        );
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        setIsLoading(false);
       });
-
-    return () => {
-      cancelled = true;
-    };
   }, [isReady, accessToken, mode, postId]);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
