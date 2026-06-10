@@ -23,6 +23,9 @@ const boardMenuItems = [
 export function Header() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const profileImagePreviewUrl = useAuthStore(
+    (state) => state.profileImagePreviewUrl,
+  );
   const logout = useAuthStore((state) => state.logout);
 
   function handleLogout() {
@@ -63,9 +66,10 @@ export function Header() {
                 className="flex min-w-0 items-center gap-2 rounded-full outline-none focus-visible:ring-[3px] focus-visible:ring-flare-400/40"
                 aria-label="마이페이지로 이동"
               >
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-flare-500 text-sm font-black text-cream-50">
-                  {getInitial(user.name)}
-                </div>
+                <ProfileAvatar
+                  imageUrl={profileImagePreviewUrl ?? user.profileImageUrl}
+                  name={user.name}
+                />
                 <div className="hidden min-w-0 leading-tight sm:block">
                   <div className="flex items-center gap-2">
                     <span className="max-w-28 truncate text-sm font-black text-slate-900 dark:text-cream-50 lg:max-w-36">
@@ -154,6 +158,31 @@ export function Header() {
 
 function getInitial(name: string) {
   return name.trim().charAt(0).toUpperCase() || "U";
+}
+
+function ProfileAvatar({
+  imageUrl,
+  name,
+}: {
+  imageUrl?: string | null;
+  name: string;
+}) {
+  if (imageUrl) {
+    return (
+      <span
+        aria-label={`${name} 프로필 이미지`}
+        className="inline-block size-9 shrink-0 rounded-full bg-cover bg-center"
+        role="img"
+        style={{ backgroundImage: `url(${imageUrl})` }}
+      />
+    );
+  }
+
+  return (
+    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-flare-500 text-sm font-black text-cream-50">
+      {getInitial(name)}
+    </div>
+  );
 }
 
 function getProviderLoginLabel(provider: string) {

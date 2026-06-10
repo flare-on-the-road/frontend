@@ -10,6 +10,9 @@ type ApiEnvelope<T> = {
   success: boolean;
   message: string;
   data: T;
+  msg?: string;
+  error?: string;
+  detail?: string;
 };
 
 const API_BASE_URL =
@@ -66,6 +69,17 @@ export async function forgotPassword(payload: {
   });
 }
 
+export async function refreshAccessToken(refreshToken: string) {
+  return request<{
+    accessToken: string;
+  }>("/auth/refresh", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${refreshToken}`,
+    },
+  });
+}
+
 export async function getCurrentUser(accessToken: string) {
   return request<AuthUser>("/users/me", {
     method: "GET",
@@ -84,23 +98,70 @@ export async function updateCurrentUserProfile(
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      name: payload.name,
+      department: payload.department,
+      phone: payload.phone,
+    }),
+  });
+}
+
+export async function updateCurrentUserProfileImage(
+  accessToken: string,
+  profileImage: File,
+) {
+  const formData = new FormData();
+  formData.append("profileImage", profileImage);
+
+  return request<AuthUser>("/users/me/profile-image", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: formData,
   });
 }
 
 async function request<T>(path: string, init: RequestInit) {
+  const isFormData = init.body instanceof FormData;
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(init.headers ?? {}),
     },
   });
-  const payload = (await response.json()) as ApiEnvelope<T>;
+  const payload = await parseResponsePayload<T>(response);
 
   if (!response.ok || !payload.success) {
-    throw new Error(payload.message || "요청 처리 중 오류가 발생했습니다.");
+    throw new Error(getErrorMessage(payload));
   }
 
   return payload.data;
+}
+
+function getErrorMessage<T>(payload: ApiEnvelope<T>) {
+  return (
+    payload.message ||
+    payload.msg ||
+    payload.error ||
+    payload.detail ||
+    "요청 처리 중 오류가 발생했습니다."
+  );
+}
+
+async function parseResponsePayload<T>(response: Response) {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    return (await response.json()) as ApiEnvelope<T>;
+  }
+
+  const message = await response.text();
+
+  return {
+    success: false,
+    message: message || response.statusText,
+    data: null as T,
+  };
 }

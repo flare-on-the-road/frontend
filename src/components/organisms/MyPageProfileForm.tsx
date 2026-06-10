@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, ShieldCheck, UserCircle } from "lucide-react";
+import { Camera, Mail, ShieldCheck, UserCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -21,8 +21,18 @@ export function MyPageProfileForm() {
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const fetchCurrentUser = useAuthStore((state) => state.fetchCurrentUser);
   const updateProfile = useAuthStore((state) => state.updateProfile);
+  const updateProfileImage = useAuthStore((state) => state.updateProfileImage);
+  const profileImagePreviewUrl = useAuthStore(
+    (state) => state.profileImagePreviewUrl,
+  );
+  const setProfileImagePreviewUrl = useAuthStore(
+    (state) => state.setProfileImagePreviewUrl,
+  );
   const [error, setError] = React.useState("");
   const [successMessage, setSuccessMessage] = React.useState("");
+  const activePreviewUrlRef = React.useRef<string | null>(null);
+  const [isImagePending, setIsImagePending] = React.useState(false);
+  const profileImageInputRef = React.useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = React.useTransition();
 
   React.useEffect(() => {
@@ -42,6 +52,14 @@ export function MyPageProfileForm() {
     }
   }, [accessToken, fetchCurrentUser, isHydrated, router, user]);
 
+  React.useEffect(() => {
+    return () => {
+      if (activePreviewUrlRef.current) {
+        URL.revokeObjectURL(activePreviewUrlRef.current);
+      }
+    };
+  }, []);
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -54,7 +72,11 @@ export function MyPageProfileForm() {
 
     startTransition(async () => {
       try {
-        await updateProfile({ name, department, phone });
+        await updateProfile({
+          name,
+          department,
+          phone,
+        });
         setSuccessMessage("프로필 정보가 저장되었습니다.");
       } catch (err) {
         setError(
@@ -62,6 +84,50 @@ export function MyPageProfileForm() {
         );
       }
     });
+  }
+
+  async function handleProfileImageChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+
+    if (activePreviewUrlRef.current) {
+      URL.revokeObjectURL(activePreviewUrlRef.current);
+      activePreviewUrlRef.current = null;
+    }
+
+    if (!file) {
+      setProfileImagePreviewUrl(null);
+      return;
+    }
+
+    const nextPreviewUrl = URL.createObjectURL(file);
+    activePreviewUrlRef.current = nextPreviewUrl;
+    setProfileImagePreviewUrl(nextPreviewUrl);
+    setError("");
+    setSuccessMessage("");
+    setIsImagePending(true);
+
+    try {
+      await updateProfileImage(file);
+      setSuccessMessage("프로필 이미지가 변경되었습니다.");
+      URL.revokeObjectURL(nextPreviewUrl);
+      activePreviewUrlRef.current = null;
+    } catch (err) {
+      URL.revokeObjectURL(nextPreviewUrl);
+      activePreviewUrlRef.current = null;
+      setProfileImagePreviewUrl(null);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "프로필 이미지 변경에 실패했습니다.",
+      );
+    } finally {
+      setIsImagePending(false);
+      if (profileImageInputRef.current) {
+        profileImageInputRef.current.value = "";
+      }
+    }
   }
 
   if (!isHydrated || !user) {
@@ -89,9 +155,34 @@ export function MyPageProfileForm() {
         <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
           <Card className="h-fit rounded-xl border-warm-200 bg-warm-50 shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <CardContent className="p-6">
-              <div className="flex size-16 items-center justify-center rounded-full bg-flare-500 text-2xl font-black text-cream-50">
-                {getInitial(user.name)}
-              </div>
+              <label
+                className="group/avatar relative inline-flex cursor-pointer rounded-full outline-none focus-within:ring-[3px] focus-within:ring-flare-400/40"
+                htmlFor="profileImage"
+                aria-label={isImagePending ? "프로필 이미지 변경 중" : "프로필 이미지 변경"}
+                title={isImagePending ? "프로필 이미지 변경 중" : "프로필 이미지 변경"}
+              >
+                <ProfileAvatar
+                  imageUrl={profileImagePreviewUrl ?? user.profileImageUrl}
+                  name={user.name}
+                  sizeClassName="size-16 text-2xl"
+                />
+                <span className="absolute inset-0 flex items-center justify-center rounded-full bg-slate-900/0 text-cream-50 opacity-0 transition group-hover/avatar:bg-slate-900/45 group-hover/avatar:opacity-100 group-focus-within/avatar:bg-slate-900/45 group-focus-within/avatar:opacity-100">
+                  {isImagePending ? (
+                    <span className="text-xs font-black">저장중</span>
+                  ) : (
+                    <Camera className="size-5" aria-hidden="true" />
+                  )}
+                </span>
+              </label>
+              <input
+                ref={profileImageInputRef}
+                id="profileImage"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                disabled={isImagePending}
+                className="sr-only"
+                onChange={handleProfileImageChange}
+              />
               <h2 className="mt-5 truncate text-2xl font-black text-slate-900 dark:text-cream-50">
                 {user.name}
               </h2>
@@ -206,6 +297,35 @@ function ProfileField({
         disabled={disabled}
         className="h-14 rounded-lg border-warm-300 bg-cream-50 px-5 text-base font-semibold dark:border-slate-700 dark:bg-slate-900"
       />
+    </div>
+  );
+}
+
+function ProfileAvatar({
+  imageUrl,
+  name,
+  sizeClassName,
+}: {
+  imageUrl?: string | null;
+  name: string;
+  sizeClassName: string;
+}) {
+  if (imageUrl) {
+    return (
+      <span
+        aria-label={`${name} 프로필 이미지`}
+        className={`${sizeClassName} inline-block shrink-0 rounded-full bg-cover bg-center`}
+        role="img"
+        style={{ backgroundImage: `url(${imageUrl})` }}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${sizeClassName} flex shrink-0 items-center justify-center rounded-full bg-flare-500 font-black text-cream-50`}
+    >
+      {getInitial(name)}
     </div>
   );
 }

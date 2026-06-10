@@ -7,7 +7,12 @@ import {
   type StateStorage,
 } from "zustand/middleware";
 
-import { getCurrentUser, updateCurrentUserProfile } from "@/services/authApi";
+import {
+  getCurrentUser,
+  refreshAccessToken,
+  updateCurrentUserProfile,
+  updateCurrentUserProfileImage,
+} from "@/services/authApi";
 import type {
   AuthResponse,
   AuthUser,
@@ -20,6 +25,7 @@ type AuthState = {
   accessToken: string | null;
   refreshToken: string | null;
   user: AuthUser | null;
+  profileImagePreviewUrl: string | null;
   status: AuthStatus;
   isHydrated: boolean;
   setSession: (auth: AuthResponse) => void;
@@ -29,6 +35,8 @@ type AuthState = {
   }) => void;
   fetchCurrentUser: () => Promise<AuthUser>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
+  updateProfileImage: (profileImage: File) => Promise<AuthUser>;
+  setProfileImagePreviewUrl: (imageUrl: string | null) => void;
   logout: () => void;
   setHydrated: (isHydrated: boolean) => void;
 };
@@ -113,6 +121,7 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       user: null,
+      profileImagePreviewUrl: null,
       status: "idle",
       isHydrated: false,
       setSession: (auth) => {
@@ -131,34 +140,33 @@ export const useAuthStore = create<AuthState>()(
         });
       },
       fetchCurrentUser: async () => {
-        const { accessToken } = get();
-
-        if (!accessToken) {
-          set({ status: "unauthenticated", user: null });
-          throw new Error("로그인이 필요합니다.");
-        }
-
-        const user = await getCurrentUser(accessToken);
+        const user = await runWithFreshAccessToken(get, set, getCurrentUser);
         set({ user, status: "authenticated" });
         return user;
       },
       updateProfile: async (payload) => {
-        const { accessToken } = get();
-
-        if (!accessToken) {
-          set({ status: "unauthenticated", user: null });
-          throw new Error("로그인이 필요합니다.");
-        }
-
-        const user = await updateCurrentUserProfile(accessToken, payload);
+        const user = await runWithFreshAccessToken(get, set, (accessToken) =>
+          updateCurrentUserProfile(accessToken, payload),
+        );
         set({ user, status: "authenticated" });
         return user;
+      },
+      updateProfileImage: async (profileImage) => {
+        const user = await runWithFreshAccessToken(get, set, (accessToken) =>
+          updateCurrentUserProfileImage(accessToken, profileImage),
+        );
+        set({ profileImagePreviewUrl: null, user, status: "authenticated" });
+        return user;
+      },
+      setProfileImagePreviewUrl: (imageUrl) => {
+        set({ profileImagePreviewUrl: imageUrl });
       },
       logout: () => {
         set({
           accessToken: null,
           refreshToken: null,
           user: null,
+          profileImagePreviewUrl: null,
           status: "unauthenticated",
         });
       },
@@ -188,3 +196,64 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+
+async function runWithFreshAccessToken<T>(
+  get: () => AuthState,
+  set: (
+    partial:
+      | Partial<AuthState>
+      | ((state: AuthState) => Partial<AuthState>),
+  ) => void,
+  request: (accessToken: string) => Promise<T>,
+) {
+  const { accessToken } = get();
+
+  if (!accessToken) {
+    set({ status: "unauthenticated", user: null });
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  try {
+    return await request(accessToken);
+  } catch (error) {
+    if (!isTokenExpiredError(error)) {
+      throw error;
+    }
+
+    const { refreshToken } = get();
+
+    if (!refreshToken) {
+      set({
+        accessToken: null,
+        refreshToken: null,
+        user: null,
+        profileImagePreviewUrl: null,
+        status: "unauthenticated",
+      });
+      throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
+    }
+
+    try {
+      const refreshed = await refreshAccessToken(refreshToken);
+      set({ accessToken: refreshed.accessToken, status: "authenticated" });
+      return await request(refreshed.accessToken);
+    } catch {
+      set({
+        accessToken: null,
+        refreshToken: null,
+        user: null,
+        profileImagePreviewUrl: null,
+        status: "unauthenticated",
+      });
+      throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
+    }
+  }
+}
+
+function isTokenExpiredError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return error.message.toLowerCase().includes("token has expired");
+}
