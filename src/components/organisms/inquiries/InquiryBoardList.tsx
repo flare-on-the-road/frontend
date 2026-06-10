@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, MessageCircle, Plus, Search } from "lucide-react";
+import { Heart, Lock, MessageCircle, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -9,19 +9,22 @@ import { Badge, Button, Input } from "@/components/atoms";
 import { SectionHeader } from "@/components/molecules";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatDateShort } from "@/lib/format";
-import { ApiRequestError, fetchPosts } from "@/services/bugsApi";
+import { ApiRequestError, fetchPosts } from "@/services/postsApi";
+import { useAuthStore } from "@/stores/authStore";
 import {
-  SEARCH_TYPE_OPTIONS,
+  INQUIRY_SEARCH_TYPE_OPTIONS,
   type PostListResponse,
   type SearchType,
-} from "@/types/bug";
+} from "@/types/board";
 
 const PAGE_SIZE = 10;
 
-export function BugBoardList() {
+export function InquiryBoardList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isReady, accessToken } = useRequireAuth();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role === "admin";
 
   const page = Math.max(Number(searchParams.get("page") ?? "1") || 1, 1);
   const keywordParam = searchParams.get("keyword") ?? "";
@@ -48,6 +51,7 @@ export function BugBoardList() {
       size: PAGE_SIZE,
       keyword: keywordParam || undefined,
       searchType: searchTypeParam,
+      boardType: "inquiry",
     })
       .then((res) => {
         if (cancelled) return;
@@ -93,7 +97,7 @@ export function BugBoardList() {
     }
 
     const queryString = params.toString();
-    router.push(`/bugs${queryString ? `?${queryString}` : ""}`);
+    router.push(`/inquiries${queryString ? `?${queryString}` : ""}`);
   }
 
   function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -120,15 +124,17 @@ export function BugBoardList() {
     <section className="px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <SectionHeader
-          title="세스코"
-          description="세스코 코드로 관리합니다. 버그 박멸을 원하시면 제보해 주세요! "
+          title="1:1 문의"
+          description="다른 사람에게 공개되지 않는 1:1 문의 게시판입니다."
           action={
-            <Button asChild className="bg-flare-500 font-bold hover:bg-flare-600">
-              <Link href="/bugs/new">
-                <Plus className="size-4" aria-hidden="true" />
-                버그 제보
-              </Link>
-            </Button>
+            !isAdmin ? (
+              <Button asChild className="bg-flare-500 font-bold hover:bg-flare-600">
+                <Link href="/inquiries/new">
+                  <Plus className="size-4" aria-hidden="true" />
+                  문의하기
+                </Link>
+              </Button>
+            ) : undefined
           }
         />
 
@@ -142,7 +148,7 @@ export function BugBoardList() {
             defaultValue={searchTypeParam}
             className="h-10 rounded-md border border-input bg-transparent px-3 text-sm font-semibold text-slate-900 outline-none dark:bg-slate-900 dark:text-cream-50"
           >
-            {SEARCH_TYPE_OPTIONS.map((option) => (
+            {INQUIRY_SEARCH_TYPE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -189,6 +195,31 @@ export function BugBoardList() {
                     (data.pagination.current_page - 1) * PAGE_SIZE -
                     index;
 
+                  if (post.is_locked) {
+                    return (
+                      <tr key={post.id}>
+                        <td className="px-3 py-3 text-center text-xs font-semibold text-slate-500 dark:text-warm-300">
+                          {no}
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className="flex min-w-0 items-center gap-2 font-bold text-slate-400 dark:text-warm-500">
+                            <Lock className="size-3.5 shrink-0" aria-hidden="true" />
+                            <span className="truncate">{post.title}</span>
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 text-center text-xs font-semibold text-slate-400 dark:text-warm-500">
+                          -
+                        </td>
+                        <td className="px-3 py-3 text-center text-xs font-semibold text-slate-400 dark:text-warm-500">
+                          -
+                        </td>
+                        <td className="px-3 py-3 text-center text-xs font-bold text-slate-400 dark:text-warm-500">
+                          -
+                        </td>
+                      </tr>
+                    );
+                  }
+
                   return (
                     <tr
                       key={post.id}
@@ -199,7 +230,7 @@ export function BugBoardList() {
                       </td>
                       <td className="px-3 py-3">
                         <Link
-                          href={`/bugs/${post.id}`}
+                          href={`/inquiries/${post.id}`}
                           className="flex min-w-0 items-center gap-2 font-bold text-slate-900 hover:text-flare-600 dark:text-cream-50 dark:hover:text-flare-400"
                         >
                           {post.is_hidden ? (

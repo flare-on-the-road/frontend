@@ -9,19 +9,23 @@ import { Badge, Button, Input } from "@/components/atoms";
 import { SectionHeader } from "@/components/molecules";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatDateShort } from "@/lib/format";
-import { ApiRequestError, fetchPosts } from "@/services/bugsApi";
+import { cn } from "@/lib/utils";
+import { ApiRequestError, fetchPosts } from "@/services/postsApi";
+import { useAuthStore } from "@/stores/authStore";
 import {
   SEARCH_TYPE_OPTIONS,
   type PostListResponse,
   type SearchType,
-} from "@/types/bug";
+} from "@/types/board";
 
 const PAGE_SIZE = 10;
 
-export function BugBoardList() {
+export function NoticeBoardList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isReady, accessToken } = useRequireAuth();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role === "admin";
 
   const page = Math.max(Number(searchParams.get("page") ?? "1") || 1, 1);
   const keywordParam = searchParams.get("keyword") ?? "";
@@ -48,6 +52,7 @@ export function BugBoardList() {
       size: PAGE_SIZE,
       keyword: keywordParam || undefined,
       searchType: searchTypeParam,
+      boardType: "notice",
     })
       .then((res) => {
         if (cancelled) return;
@@ -93,7 +98,7 @@ export function BugBoardList() {
     }
 
     const queryString = params.toString();
-    router.push(`/bugs${queryString ? `?${queryString}` : ""}`);
+    router.push(`/notices${queryString ? `?${queryString}` : ""}`);
   }
 
   function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -120,15 +125,17 @@ export function BugBoardList() {
     <section className="px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <SectionHeader
-          title="세스코"
-          description="세스코 코드로 관리합니다. 버그 박멸을 원하시면 제보해 주세요! "
+          title="공지사항"
+          description="Flare 운영 관련 공지사항을 확인하세요."
           action={
-            <Button asChild className="bg-flare-500 font-bold hover:bg-flare-600">
-              <Link href="/bugs/new">
-                <Plus className="size-4" aria-hidden="true" />
-                버그 제보
-              </Link>
-            </Button>
+            isAdmin ? (
+              <Button asChild className="bg-flare-500 font-bold hover:bg-flare-600">
+                <Link href="/notices/new">
+                  <Plus className="size-4" aria-hidden="true" />
+                  공지 작성
+                </Link>
+              </Button>
+            ) : undefined
           }
         />
 
@@ -199,13 +206,23 @@ export function BugBoardList() {
                       </td>
                       <td className="px-3 py-3">
                         <Link
-                          href={`/bugs/${post.id}`}
+                          href={`/notices/${post.id}`}
                           className="flex min-w-0 items-center gap-2 font-bold text-slate-900 hover:text-flare-600 dark:text-cream-50 dark:hover:text-flare-400"
                         >
                           {post.is_hidden ? (
                             <Badge variant="destructive">가려짐</Badge>
                           ) : null}
-                          <span className="truncate">{post.title}</span>
+                          {post.is_important ? (
+                            <Badge className="bg-flare-500 text-cream-50">중요</Badge>
+                          ) : null}
+                          <span
+                            className={cn(
+                              "truncate",
+                              post.is_important && "font-black",
+                            )}
+                          >
+                            {post.title}
+                          </span>
                           <span className="inline-flex shrink-0 items-center gap-2 text-xs font-bold text-slate-400 dark:text-warm-400">
                             {post.comment_count > 0 ? (
                               <span className="inline-flex items-center gap-0.5">
