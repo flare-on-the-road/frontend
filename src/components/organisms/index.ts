@@ -4,6 +4,7 @@ export { FindIdForm } from "./FindIdForm";
 export { ForgotPasswordForm } from "./ForgotPasswordForm";
 export { Header } from "./Header";
 export { LoginForm } from "./LoginForm";
+export { LiveCctvDashboard } from "./LiveCctvDashboard";
 export { MyPageProfileForm } from "./MyPageProfileForm";
 export { OAuthCallback } from "./OAuthCallback";
 export { ProjectOverview } from "./ProjectOverview";
