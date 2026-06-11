@@ -1,10 +1,16 @@
 import type {
   AuthResponse,
   AuthUser,
+  ChangePasswordPayload,
   UpdateProfilePayload,
 } from "@/types/auth";
 
-export type { AuthResponse, AuthUser, UpdateProfilePayload } from "@/types/auth";
+export type {
+  AuthResponse,
+  AuthUser,
+  ChangePasswordPayload,
+  UpdateProfilePayload,
+} from "@/types/auth";
 
 type ApiEnvelope<T> = {
   success: boolean;
@@ -119,6 +125,19 @@ export async function updateCurrentUserProfileImage(
       Authorization: `Bearer ${accessToken}`,
     },
     body: formData,
+  });
+}
+
+export async function changeCurrentUserPassword(
+  accessToken: string,
+  payload: ChangePasswordPayload,
+) {
+  return request<{ changed: boolean }>("/users/me/password", {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
   });
 }
 

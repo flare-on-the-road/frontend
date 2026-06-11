@@ -1,6 +1,7 @@
 "use client";
 
-import { Camera, Mail, ShieldCheck, UserCircle } from "lucide-react";
+import { Camera, KeyRound, Mail, ShieldCheck, UserCircle } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -199,6 +200,18 @@ export function MyPageProfileForm() {
                   {getProviderLabel(user.provider)}
                 </p>
               </div>
+              {user.provider.toLowerCase() === "local" ? (
+                <Button
+                  asChild
+                  className="mt-6 h-11 w-full rounded-lg border border-warm-300 bg-cream-50 text-sm font-black text-slate-700 hover:bg-warm-100 dark:border-slate-700 dark:bg-slate-900 dark:text-cream-50 dark:hover:bg-slate-700"
+                  variant="outline"
+                >
+                  <Link href="/my-page/change-password">
+                    <KeyRound className="size-4" aria-hidden="true" />
+                    비밀번호 변경
+                  </Link>
+                </Button>
+              ) : null}
             </CardContent>
           </Card>
 

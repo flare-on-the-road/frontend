@@ -1,4 +1,5 @@
 export { AuthShell } from "./AuthShell";
+export { ChangePasswordForm } from "./ChangePasswordForm";
 export { DevelopmentInfo } from "./DevelopmentInfo";
 export { FindIdForm } from "./FindIdForm";
 export { ForgotPasswordForm } from "./ForgotPasswordForm";

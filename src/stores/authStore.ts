@@ -8,6 +8,7 @@ import {
 } from "zustand/middleware";
 
 import {
+  changeCurrentUserPassword,
   getCurrentUser,
   refreshAccessToken,
   updateCurrentUserProfile,
@@ -16,6 +17,7 @@ import {
 import type {
   AuthResponse,
   AuthUser,
+  ChangePasswordPayload,
   UpdateProfilePayload,
 } from "@/types/auth";
 
@@ -36,6 +38,7 @@ type AuthState = {
   fetchCurrentUser: () => Promise<AuthUser>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
   updateProfileImage: (profileImage: File) => Promise<AuthUser>;
+  changePassword: (payload: ChangePasswordPayload) => Promise<void>;
   setProfileImagePreviewUrl: (imageUrl: string | null) => void;
   logout: () => void;
   setHydrated: (isHydrated: boolean) => void;
@@ -157,6 +160,12 @@ export const useAuthStore = create<AuthState>()(
         );
         set({ profileImagePreviewUrl: null, user, status: "authenticated" });
         return user;
+      },
+      changePassword: async (payload) => {
+        await runWithFreshAccessToken(get, set, (accessToken) =>
+          changeCurrentUserPassword(accessToken, payload),
+        );
+        set({ status: "authenticated" });
       },
       setProfileImagePreviewUrl: (imageUrl) => {
         set({ profileImagePreviewUrl: imageUrl });

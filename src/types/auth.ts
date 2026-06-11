@@ -22,6 +22,12 @@ export type UpdateProfilePayload = {
   phone?: string;
 };
 
+export type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+};
+
 export type AuthFile = {
   id: string;
   ownerUserId?: string | null;
