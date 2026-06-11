@@ -6,7 +6,7 @@ import type {
   SearchType,
 } from "@/types/bug";
 
-const API_BASE_URL =
+export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5001/api";
 
 export class ApiRequestError extends Error {
@@ -33,10 +33,11 @@ async function request<T>(
   accessToken: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const isFormData = init.body instanceof FormData;
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       Authorization: `Bearer ${accessToken}`,
       ...(init.headers ?? {}),
     },
@@ -90,22 +91,44 @@ export function fetchPostDetail(accessToken: string, postId: number) {
 
 export function createPost(
   accessToken: string,
-  data: { title: string; content: string },
+  data: { title: string; content: string; attachments?: File[] },
 ) {
+  const formData = new FormData();
+  formData.append("title", data.title);
+  formData.append("content", data.content);
+  (data.attachments ?? []).forEach((file) => {
+    formData.append("attachments", file);
+  });
+
   return request<{ id: number }>("/posts", accessToken, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: formData,
   });
 }
 
 export function updatePost(
   accessToken: string,
   postId: number,
-  data: { title: string; content: string },
+  data: {
+    title: string;
+    content: string;
+    attachments?: File[];
+    removedFileIds?: number[];
+  },
 ) {
+  const formData = new FormData();
+  formData.append("title", data.title);
+  formData.append("content", data.content);
+  (data.attachments ?? []).forEach((file) => {
+    formData.append("attachments", file);
+  });
+  (data.removedFileIds ?? []).forEach((id) => {
+    formData.append("removed_file_ids", String(id));
+  });
+
   return request<{ id: number }>(`/posts/${postId}`, accessToken, {
     method: "PUT",
-    body: JSON.stringify(data),
+    body: formData,
   });
 }
 

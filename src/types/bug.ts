@@ -2,6 +2,15 @@ export const POST_TITLE_MAX_LENGTH = 100;
 export const POST_CONTENT_MAX_LENGTH = 10000;
 export const COMMENT_CONTENT_MAX_LENGTH = 1000;
 
+export const MAX_ATTACHMENTS = 2;
+export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+export const ALLOWED_ATTACHMENT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
+
 export type Pagination = {
   current_page: number;
   size: number;
@@ -31,6 +40,14 @@ export type PostPermissions = {
   can_hide: boolean;
 };
 
+export type Attachment = {
+  id: number;
+  original_filename: string;
+  url: string;
+  byte_size: number;
+  content_type: string;
+};
+
 export type PostDetail = {
   id: number;
   title: string;
@@ -45,6 +62,7 @@ export type PostDetail = {
   created_at: string;
   updated_at: string;
   permissions: PostPermissions;
+  attachments: Attachment[];
 };
 
 export type CommentPermissions = {

@@ -10,6 +10,7 @@ import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
+  API_BASE_URL,
   ApiRequestError,
   deletePost,
   fetchPostDetail,
@@ -181,6 +182,32 @@ export function BugDetailView() {
             <div className="whitespace-pre-wrap break-words text-base font-medium leading-7 text-slate-700 dark:text-warm-200">
               {post.content}
             </div>
+
+            {post.attachments.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {post.attachments.map((attachment) => {
+                  const resolvedUrl = attachment.url.startsWith("http")
+                    ? attachment.url
+                    : `${API_BASE_URL}${attachment.url}`;
+
+                  return (
+                    <a
+                      key={attachment.id}
+                      href={resolvedUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={resolvedUrl}
+                        alt={attachment.original_filename}
+                        className="h-24 w-24 rounded-lg border border-warm-200 object-cover dark:border-slate-700"
+                      />
+                    </a>
+                  );
+                })}
+              </div>
+            ) : null}
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-warm-200 pt-4 dark:border-slate-700">
               <Button
