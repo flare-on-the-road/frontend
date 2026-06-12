@@ -189,18 +189,27 @@ function CctvPlayer({ cctv }: { cctv: Cctv | null }) {
     const video = videoRef.current;
     let hls: Hls | null = null;
 
+    const playVideo = () => {
+      video.play().catch(() => {
+        // 자동재생이 차단되면 사용자가 컨트롤로 직접 재생할 수 있다.
+      });
+    };
+
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = cctv.streamUrl;
+      video.addEventListener("loadedmetadata", playVideo);
     } else if (Hls.isSupported()) {
       hls = new Hls();
       hls.loadSource(cctv.streamUrl);
       hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, playVideo);
     } else {
       video.src = cctv.streamUrl;
     }
 
     return () => {
       hls?.destroy();
+      video.removeEventListener("loadedmetadata", playVideo);
       video.removeAttribute("src");
       video.load();
     };
@@ -220,6 +229,7 @@ function CctvPlayer({ cctv }: { cctv: Cctv | null }) {
         ref={videoRef}
         className="aspect-video w-full rounded-lg bg-slate-950 object-cover"
         controls
+        autoPlay
         muted
         playsInline
       />
