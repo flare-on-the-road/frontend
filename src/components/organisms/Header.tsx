@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, ClipboardList, Info, LogOut, UserCircle } from "lucide-react";
+import { Bot, Camera, ClipboardList, Info, LogOut, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -23,6 +23,12 @@ const boardMenuItems = [
 
 const cctvMenuItems = [
   { label: "전국 CCTV 보기", href: "/cctv" },
+];
+
+const aiLabMenuItems = [
+  { label: "모델 데모", href: "#model-demo" },
+  { label: "개발 과정", href: "#dev-process" },
+  { label: "학습 결과 보고서", href: "#training-report" },
 ];
 
 export function Header() {
@@ -56,6 +62,11 @@ export function Header() {
             icon={<Camera className="size-6" aria-hidden="true" />}
             label="실시간 CCTV"
             items={cctvMenuItems}
+          />
+          <HeaderMenu
+            icon={<Bot className="size-6" aria-hidden="true" />}
+            label="AI Lab"
+            items={aiLabMenuItems}
           />
           <HeaderMenu
             icon={<ClipboardList className="size-6" aria-hidden="true" />}
@@ -123,7 +134,7 @@ export function Header() {
 
       <div className="border-t border-warm-200 bg-warm-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-800 md:hidden">
         <div className="grid grid-cols-2 gap-3 text-sm font-bold text-slate-700 dark:text-warm-200">
-          {[...flareMenuItems, ...cctvMenuItems, ...boardMenuItems].map((item) => (
+          {[...flareMenuItems, ...cctvMenuItems, ...aiLabMenuItems, ...boardMenuItems].map((item) => (
             <Link key={item.label} href={item.href}>
               {item.label}
             </Link>
