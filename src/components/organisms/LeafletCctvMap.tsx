@@ -20,7 +20,7 @@ export default function LeafletCctvMap({
   onSelect,
 }: LeafletCctvMapProps) {
   return (
-    <div className="relative h-full">
+    <div className="relative isolate h-full">
       <MapContainer
         center={KOREA_CENTER}
         className="h-full w-full"
