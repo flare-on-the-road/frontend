@@ -256,7 +256,10 @@ export function MyPageProfileForm() {
                 <ProfileField
                   id="phone"
                   label="전화번호"
-                  defaultValue={user.phone ?? ""}
+                  defaultValue={formatPhoneNumber(user.phone ?? "")}
+                  inputMode="numeric"
+                  maxLength={13}
+                  onChange={handlePhoneNumberChange}
                   placeholder="010-1234-5678"
                 />
 
@@ -285,6 +288,9 @@ function ProfileField({
   placeholder,
   required,
   disabled,
+  inputMode,
+  maxLength,
+  onChange,
 }: {
   id: string;
   label: string;
@@ -292,6 +298,9 @@ function ProfileField({
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
+  inputMode?: React.InputHTMLAttributes<HTMLInputElement>["inputMode"];
+  maxLength?: number;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
     <div className="space-y-3">
@@ -308,6 +317,9 @@ function ProfileField({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        onChange={onChange}
         className="h-14 rounded-lg border-warm-300 bg-cream-50 px-5 text-base font-semibold dark:border-slate-700 dark:bg-slate-900"
       />
     </div>
@@ -345,6 +357,24 @@ function ProfileAvatar({
 
 function getInitial(name: string) {
   return name.trim().charAt(0).toUpperCase() || "U";
+}
+
+function handlePhoneNumberChange(event: React.ChangeEvent<HTMLInputElement>) {
+  event.currentTarget.value = formatPhoneNumber(event.currentTarget.value);
+}
+
+function formatPhoneNumber(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+
+  if (digits.length <= 3) {
+    return digits;
+  }
+
+  if (digits.length <= 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  }
+
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
 
 function getProviderLabel(provider: string) {

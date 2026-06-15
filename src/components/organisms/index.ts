@@ -3,6 +3,7 @@ export { ChangePasswordForm } from "./ChangePasswordForm";
 export { DevelopmentInfo } from "./DevelopmentInfo";
 export { FindIdForm } from "./FindIdForm";
 export { ForgotPasswordForm } from "./ForgotPasswordForm";
+export { Footer } from "./Footer";
 export { Header } from "./Header";
 export { LoginForm } from "./LoginForm";
 export { LiveCctvDashboard } from "./LiveCctvDashboard";

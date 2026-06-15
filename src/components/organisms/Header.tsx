@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Camera, ClipboardList, Info, LogOut, UserCircle } from "lucide-react";
+import { Bot, Camera, ClipboardList, Info, LogOut, Settings, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -128,13 +128,32 @@ export function Header() {
               </Link>
             </Button>
           )}
+          {user?.role === "admin" ? (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="size-11 rounded-full text-slate-600 hover:bg-warm-100 hover:text-flare-600 dark:text-warm-200 dark:hover:bg-slate-800 dark:hover:text-flare-400"
+              aria-label="관리자 설정"
+              title="관리자 설정"
+            >
+              <Link href="/admin">
+                <Settings className="size-5" aria-hidden="true" />
+              </Link>
+            </Button>
+          ) : null}
           <ThemeToggle />
         </div>
       </div>
 
       <div className="border-t border-warm-200 bg-warm-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-800 md:hidden">
         <div className="grid grid-cols-2 gap-3 text-sm font-bold text-slate-700 dark:text-warm-200">
-          {[...flareMenuItems, ...cctvMenuItems, ...aiLabMenuItems, ...boardMenuItems].map((item) => (
+          {[
+            ...flareMenuItems,
+            ...cctvMenuItems,
+            ...aiLabMenuItems,
+            ...boardMenuItems,
+          ].map((item) => (
             <Link key={item.label} href={item.href}>
               {item.label}
             </Link>
