@@ -15,10 +15,8 @@ const flareMenuItems = [
 
 const boardMenuItems = [
   { label: "공지사항", href: "/notices" },
-  { label: "자주 묻는 질문", href: "#faq" },
   { label: "1:1 문의", href: "/inquiries" },
   { label: "버그 게시판", href: "/bugs" },
-  { label: "자료 게시판", href: "#resources" },
 ];
 
 const cctvMenuItems = [
@@ -26,9 +24,9 @@ const cctvMenuItems = [
 ];
 
 const aiLabMenuItems = [
-  { label: "모델 데모", href: "#model-demo" },
-  { label: "개발 과정", href: "#dev-process" },
-  { label: "학습 결과 보고서", href: "#training-report" },
+  { label: "AI 모델 데모", href: "/ai-lab/model-demo" },
+  { label: "탐지 파이프라인", href: "/ai-lab/pipeline" },
+  { label: "학습 데이터셋", href: "/ai-lab/dataset" },
 ];
 
 export function Header() {
