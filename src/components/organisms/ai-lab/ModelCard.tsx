@@ -14,7 +14,11 @@ type ModelCardProps = {
 
 export function ModelCard({ model, selected, onToggle }: ModelCardProps) {
   const accentClass =
-    model.accentColor === "teal" ? "bg-teal-500" : "bg-flare-500";
+    model.accentColor === "teal"
+      ? "bg-teal-500"
+      : model.accentColor === "violet"
+        ? "bg-violet-500"
+        : "bg-flare-500";
 
   return (
     <button

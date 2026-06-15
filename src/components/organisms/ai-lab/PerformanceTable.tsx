@@ -125,7 +125,11 @@ export function PerformanceTable({
             <span
               className={cn(
                 "size-2 rounded-full",
-                model.accentColor === "teal" ? "bg-teal-500" : "bg-flare-500",
+                model.accentColor === "teal"
+                  ? "bg-teal-500"
+                  : model.accentColor === "violet"
+                    ? "bg-violet-500"
+                    : "bg-flare-500",
               )}
               aria-hidden="true"
             />

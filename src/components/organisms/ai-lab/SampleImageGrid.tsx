@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ImageIcon, Upload } from "lucide-react";
+import { Check, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -8,6 +8,7 @@ import { Card } from "@/components/atoms";
 import { cn } from "@/lib/utils";
 import {
   ACCEPTED_IMAGE_TYPES,
+  getSampleImageUrl,
   MAX_UPLOAD_SIZE_BYTES,
   SAMPLE_IMAGES,
 } from "@/types/ai-lab";
@@ -49,7 +50,7 @@ export function SampleImageGrid({
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {SAMPLE_IMAGES.map((image) => {
           const isSelected =
             selected.type === "sample" && selected.key === image.key;
@@ -59,7 +60,7 @@ export function SampleImageGrid({
               key={image.key}
               type="button"
               onClick={() => onSelectSample(image.key)}
-              className="w-44 shrink-0 text-left"
+              className="text-left"
             >
               <Card
                 className={cn(
@@ -67,8 +68,13 @@ export function SampleImageGrid({
                   isSelected ? "border-2 border-flare-500" : "border-border",
                 )}
               >
-                <div className="flex aspect-4/3 items-center justify-center bg-warm-100 text-warm-400 dark:bg-slate-800">
-                  <ImageIcon className="size-10" aria-hidden="true" />
+                <div className="relative aspect-4/3 overflow-hidden bg-warm-100 dark:bg-slate-800">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getSampleImageUrl(image.key)}
+                    alt={image.name}
+                    className="absolute inset-0 size-full object-cover"
+                  />
                 </div>
                 {isSelected ? (
                   <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-flare-500 text-cream-50">

@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { ApiRequestError, detectImages } from "@/services/aiLabApi";
 import {
   AI_LAB_MODELS,
+  getSampleImageUrl,
   SAMPLE_IMAGES,
   THRESHOLD_DEFAULT,
   type DetectResults,
@@ -166,31 +167,16 @@ export function ModelDemoPage() {
       : selectedImage.file.name;
 
   const imageUrl =
-    selectedImage.type === "upload" ? selectedImage.previewUrl : undefined;
+    selectedImage.type === "upload"
+      ? selectedImage.previewUrl
+      : getSampleImageUrl(selectedImage.key);
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-12 px-5 py-10 sm:px-8 lg:px-12">
       {/* 헤더 영역 */}
       <section className="space-y-4">
-        <nav
-          className="text-sm font-semibold text-muted-foreground"
-          aria-label="breadcrumb"
-        >
-          <Link href="/" className="hover:text-flare-600 dark:hover:text-flare-400">
-            Home
-          </Link>
-          <span className="px-2">{">"}</span>
-          <span>AI Lab</span>
-          <span className="px-2">{">"}</span>
-          <span className="text-foreground">AI 모델 데모</span>
-        </nav>
-
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-3xl space-y-3">
-            <Badge className="gap-1.5 bg-flare-500 text-cream-50 hover:bg-flare-500">
-              <Bot className="size-3.5" aria-hidden="true" />
-              AI LAB · MODEL PLAYGROUND
-            </Badge>
             <h1 className="text-3xl font-black text-foreground sm:text-4xl">
               화재 / 연기 객체탐지 모델 데모
             </h1>
@@ -212,7 +198,7 @@ export function ModelDemoPage() {
             </span>
             <span className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
               <Server className="size-4" aria-hidden="true" />
-              GPU: A10 (24GB)
+              GPU: A40 (16GB)
             </span>
           </div>
         </div>

@@ -1,6 +1,6 @@
 export type ModelKey = "rt-detr" | "yolov8" | "yolov11";
 
-export type ModelAccentColor = "orange" | "teal";
+export type ModelAccentColor = "orange" | "teal" | "violet";
 
 export type ModelInfo = {
   key: ModelKey;
@@ -17,11 +17,11 @@ export type ModelInfo = {
 export const AI_LAB_MODELS: ModelInfo[] = [
   {
     key: "rt-detr",
-    name: "RT-DETR",
-    fullName: "Real-Time DETR (Transformer)",
+    name: "RT-DETRv2",
+    fullName: "Real-Time DETRv2 (Transformer)",
     description:
-      "Anchor-free 트랜스포머 기반 실시간 객체탐지 모델. 복잡한 배경에서 안정적인 화재/연기 탐지.",
-    map50: 89.2,
+      "HGNetv2-L 백본 기반 Anchor-free 트랜스포머 실시간 객체탐지 모델. Hungarian Matching으로 NMS 없이 End-to-End 탐지를 수행하며, 터널 환경 화재·연기 탐지에서 YOLO 대비 연기 미탐율 4.8배 개선.",
+    map50: 95.2,
     legendMap50: 74.1,
     params: "42M",
     accentColor: "orange",
@@ -29,23 +29,23 @@ export const AI_LAB_MODELS: ModelInfo[] = [
   {
     key: "yolov8",
     name: "YOLOv8",
-    fullName: "Ultralytics YOLOv8-m",
+    fullName: "Ultralytics YOLOv8-l",
     description:
-      "경량화 1-stage 탐지 모델. 빠른 추론 속도와 균형 잡힌 정확도로 엣지 환경에 적합.",
-    map50: 87.8,
+      "CSPDarknet 백본 기반 RT-DETRv2 대비 비교 모델. 1-stage Anchor 기반 고속 탐지 구조로 근거리 고신뢰 화염 탐지에 강점을 보이나, 터널 원거리·저화질 환경에서 연기 미탐율이 높음.",
+    map50: 95.5,
     legendMap50: 71.2,
     params: "25M",
-    accentColor: "orange",
+    accentColor: "violet",
   },
   {
     key: "yolov11",
     name: "YOLOv11",
-    fullName: "Ultralytics YOLOv11-m",
+    fullName: "Ultralytics YOLOv11-l",
     description:
-      "YOLO 최신 세대 모델. 향상된 백본 구조로 소형 화재 패턴에 대한 탐지율 개선.",
-    map50: 90.1,
+      "C3k2 + SPPF + C2PSA 백본 기반 RT-DETRv2 대비 비교 모델. YOLOv8-l 대비 개선된 구조이나 혼동 행렬 패턴이 거의 동일하게 나타나 아키텍처 한계로 해석됨.",
+    map50: 95.5,
     legendMap50: 75.6,
-    params: "20M",
+    params: "25M",
     accentColor: "teal",
   },
 ];
@@ -54,38 +54,39 @@ export type SampleImage = {
   key: string;
   name: string;
   description: string;
+  /** 이미지 파일 확장자 (기본값 "jpg") */
+  ext?: "jpg" | "png";
 };
+
+/** public/ai-lab/samples/ 아래 "{key}.{ext}" 파일을 참조하는 URL을 반환한다 (ext 기본값 jpg). */
+export function getSampleImageUrl(key: string): string {
+  const ext = SAMPLE_IMAGES.find((image) => image.key === key)?.ext ?? "jpg";
+  return `/ai-lab/samples/${key}.${ext}`;
+}
 
 export const SAMPLE_IMAGES: SampleImage[] = [
   {
-    key: "sample_highway_fire",
-    name: "고속도로 차량 화재",
-    description: "경부고속도로 부산방향 31...",
+    key: "sample_1",
+    name: "고속도로 터널 차량 화재",
+    description: "경부동탄터널 부산방향",
+    ext: "png",
   },
   {
-    key: "sample_tunnel_smoke",
-    name: "터널 입구 연기 발생",
-    description: "중부내륙선 상생 178K 터널",
+    key: "sample_2",
+    name: "고속도로 야외 차량 연기",
+    description: "서대전쉼터 논산방향",
   },
   {
-    key: "sample_urban_fire",
-    name: "도심 가로변 소형 화재",
-    description: "서울외곽순환 선본 IC 인근",
+    key: "sample_3",
+    name: "고속도로 터널 차량 화재 연기",
+    description: "경부동탄터널 부산방향",
+    ext: "png",
   },
   {
-    key: "sample_field_smoke",
-    name: "농촌 도로 들불 연기",
-    description: "국도 32호선 예산방면",
-  },
-  {
-    key: "sample_night_fire",
-    name: "야간 도로 화재",
-    description: "서해안고속도로 목포방면 ...",
-  },
-  {
-    key: "sample_tunnel_fire",
-    name: "터널 내부 차량 화재",
-    description: "동해선 강릉방면 22K 터널",
+    key: "sample_4",
+    name: "자동차 부품 공장 화재현장 연기",
+    description: "대전 대덕구 3공단 대형화재",
+    ext: "png",
   },
 ];
 

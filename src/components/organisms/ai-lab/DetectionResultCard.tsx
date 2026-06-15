@@ -27,7 +27,11 @@ export function DetectionResultCard({
     (detection) => detection.confidence >= threshold,
   );
   const accentClass =
-    model.accentColor === "teal" ? "bg-teal-500" : "bg-flare-500";
+    model.accentColor === "teal"
+      ? "bg-teal-500"
+      : model.accentColor === "violet"
+        ? "bg-violet-500"
+        : "bg-flare-500";
 
   return (
     <Card className="overflow-hidden">
