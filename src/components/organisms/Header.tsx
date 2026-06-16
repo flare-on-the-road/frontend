@@ -21,6 +21,7 @@ const boardMenuItems = [
 
 const cctvMenuItems = [
   { label: "전국 CCTV 보기", href: "/cctv" },
+  { label: "탐지 이벤트", href: "/events" },
 ];
 
 const aiLabMenuItems = [

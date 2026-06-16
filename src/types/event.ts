@@ -10,6 +10,7 @@ export type Event = {
   vlmReason: string | null;
   detectedClasses: string[];
   snapshotKey: string | null;
+  snapshotUrl: string | null;
   createdAt: string | null;
 };
 
