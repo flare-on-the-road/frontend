@@ -15,6 +15,7 @@ type DetectionCanvasProps = {
 const LABEL_COLORS: Record<string, string> = {
   FIRE: "#ef4444",
   SMOKE: "#14b8a6",
+  CARLIGHT: "#f59e0b",
 };
 
 export function DetectionCanvas({

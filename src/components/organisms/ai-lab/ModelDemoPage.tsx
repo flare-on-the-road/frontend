@@ -11,6 +11,7 @@ import {
   AI_LAB_MODELS,
   getSampleImageUrl,
   SAMPLE_IMAGES,
+  SAMPLE_RESULTS,
   THRESHOLD_DEFAULT,
   type DetectResults,
   type ModelKey,
@@ -65,18 +66,17 @@ export function ModelDemoPage() {
     async function run() {
       setError("");
 
-      const imageBase64 =
-        selectedImage.type === "upload"
-          ? await fileToBase64(selectedImage.file)
-          : undefined;
-      const imageKey =
-        selectedImage.type === "sample" ? selectedImage.key : undefined;
+      if (selectedImage.type === "sample") {
+        await sleep(INFERENCE_DELAY_MS);
+        if (!cancelled) setResults(SAMPLE_RESULTS[selectedImage.key] ?? null);
+        return;
+      }
 
+      const imageBase64 = await fileToBase64(selectedImage.file);
       const [response] = await Promise.all([
         detectImages(token, {
           models: ALL_MODEL_KEYS,
           threshold: 0,
-          imageKey,
           imageBase64,
         }),
         sleep(INFERENCE_DELAY_MS),
