@@ -1,11 +1,9 @@
 "use client";
 
-import { Bot, Loader2, Server } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Server } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/atoms";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { cn } from "@/lib/utils";
 import { ApiRequestError, detectImages } from "@/services/aiLabApi";
@@ -198,7 +196,7 @@ export function ModelDemoPage() {
             </span>
             <span className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
               <Server className="size-4" aria-hidden="true" />
-              GPU: A40 (16GB)
+              GPU: GTX 1060 VM
             </span>
           </div>
         </div>
