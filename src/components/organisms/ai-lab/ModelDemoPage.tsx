@@ -89,9 +89,13 @@ export function ModelDemoPage() {
     run()
       .catch((err) => {
         if (cancelled) return;
+        const detail =
+          err instanceof ApiRequestError && err.details
+            ? err.details.reason ?? err.details.VISION_API_URL
+            : "";
         setError(
           err instanceof ApiRequestError
-            ? err.message
+            ? [err.message, detail].filter(Boolean).join(" ")
             : "탐지 결과를 불러오지 못했습니다.",
         );
       })

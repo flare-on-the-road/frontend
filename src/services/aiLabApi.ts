@@ -27,17 +27,38 @@ async function request<T>(
   accessToken: string,
   init: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      ...(init.headers ?? {}),
-    },
-  });
+  const url = `${API_BASE_URL}${path}`;
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        ...(init.headers ?? {}),
+      },
+    });
+  } catch {
+    throw new ApiRequestError(
+      "NETWORK_ERROR",
+      `백엔드 API에 연결하지 못했습니다: ${url}`,
+      0,
+    );
+  }
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  let payload = null;
+
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    throw new ApiRequestError(
+      "INVALID_RESPONSE",
+      `백엔드가 JSON이 아닌 응답을 반환했습니다. (${response.status})`,
+      response.status,
+    );
+  }
 
   if (!response.ok) {
     const error = payload?.error ?? {};
