@@ -1,4 +1,6 @@
 export { DetectionCanvas } from "./DetectionCanvas";
+export { DevProcessPage } from "./DevProcessPage";
+export { DevProcessToc } from "./DevProcessToc";
 export { DetectionResultCard } from "./DetectionResultCard";
 export { ModelCard } from "./ModelCard";
 export { ModelDemoPage } from "./ModelDemoPage";
