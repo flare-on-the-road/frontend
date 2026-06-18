@@ -24,6 +24,11 @@ export type EventListResponse = {
   };
 };
 
+export type FireAlertResponse = {
+  events: Event[];
+  latestId: number | null;
+};
+
 export type ListEventsParams = {
   page?: number;
   size?: number;

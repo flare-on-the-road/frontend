@@ -12,7 +12,7 @@ export type Cctv = {
 export type CctvListResponse = {
   items: Cctv[];
   total: number;
-  bounds: {
+  bounds?: {
     minX: number;
     maxX: number;
     minY: number;

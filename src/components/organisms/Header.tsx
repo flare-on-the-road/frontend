@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 
 import { Button, Logo, ThemeToggle } from "@/components/atoms";
 import { useAuthStore } from "@/stores/authStore";
+import { FireNotificationBell } from "./FireNotificationBell";
 
 const flareMenuItems = [
   { label: "프로젝트 개요", href: "/overview" },
@@ -75,6 +76,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {user ? <FireNotificationBell /> : null}
           {user ? (
             <div className="flex min-w-0 items-center gap-2 rounded-full border border-warm-200 bg-cream-100 px-2.5 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <Link

@@ -32,3 +32,14 @@ export async function fetchCctvs(params?: { cctvType?: string; limit?: number })
 
   return payload.data;
 }
+
+export async function fetchMonitoredCctvs() {
+  const response = await fetch(`${API_BASE_URL}/cctvs/monitored`);
+  const payload = (await response.json()) as ApiEnvelope<CctvListResponse>;
+
+  if (!response.ok || !payload.success) {
+    throw new Error(payload.message || "관제 CCTV 목록을 불러오지 못했습니다.");
+  }
+
+  return payload.data;
+}

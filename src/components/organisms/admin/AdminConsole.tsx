@@ -1,10 +1,13 @@
 "use client";
 
 import {
+  AlertTriangle,
+  Camera,
   CheckCircle2,
   ClipboardList,
   Eye,
   EyeOff,
+  Grid2X2,
   LayoutDashboard,
   MessageSquare,
   Plus,
@@ -12,6 +15,7 @@ import {
   Search,
   Send,
   ShieldCheck,
+  X,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -33,6 +37,8 @@ import {
   unhideAdminPost,
   updateAdminUser,
 } from "@/services/adminApi";
+import { fetchMonitoredCctvs } from "@/services/cctvApi";
+import { CctvPlayer } from "@/components/organisms/LiveCctvDashboard";
 import type {
   AdminInquiriesResponse,
   AdminPost,
@@ -44,6 +50,7 @@ import type {
   AdminUsersResponse,
 } from "@/types/admin";
 import type { BoardType } from "@/types/board";
+import type { Cctv } from "@/types/cctv";
 
 const PAGE_SIZE = 10;
 const EMPTY_FORM: AdminUserPayload = {
@@ -68,7 +75,7 @@ const BOARD_LABELS: Record<BoardType, string> = {
   inquiry: "문의",
 };
 
-type Tab = "overview" | "users" | "posts" | "inquiries";
+type Tab = "overview" | "monitor" | "users" | "posts" | "inquiries";
 
 export function AdminConsole() {
   const { isReady, accessToken } = useRequireAdmin();
@@ -77,6 +84,8 @@ export function AdminConsole() {
   const [users, setUsers] = React.useState<AdminUsersResponse | null>(null);
   const [posts, setPosts] = React.useState<AdminPostsResponse | null>(null);
   const [inquiries, setInquiries] = React.useState<AdminInquiriesResponse | null>(null);
+  const [monitoredCctvs, setMonitoredCctvs] = React.useState<Cctv[]>([]);
+  const [selectedCctv, setSelectedCctv] = React.useState<Cctv | null>(null);
   const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(null);
   const [userForm, setUserForm] = React.useState<AdminUserPayload>(EMPTY_FORM);
   const [answerDrafts, setAnswerDrafts] = React.useState<Record<number, string>>({});
@@ -100,6 +109,19 @@ export function AdminConsole() {
     status: "all" as "all" | "open" | "answered",
     page: 1,
   });
+  const pendingCctvIdRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    const cctvId = params.get("cctvId");
+
+    if (tab === "monitor") {
+      pendingCctvIdRef.current = cctvId;
+      window.setTimeout(() => setActiveTab("monitor"), 0);
+    }
+  }, []);
 
   const loadOverview = React.useCallback(async () => {
     if (!accessToken) return;
@@ -153,19 +175,40 @@ export function AdminConsole() {
     }
   }, [accessToken, inquiryFilters]);
 
+  const loadMonitoredCctvs = React.useCallback(async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const data = await fetchMonitoredCctvs();
+      setMonitoredCctvs(data.items);
+      setSelectedCctv((current) => {
+        const pendingId = pendingCctvIdRef.current;
+        const pendingMatch = pendingId ? data.items.find((item) => item.id === pendingId) : null;
+        pendingCctvIdRef.current = null;
+        return pendingMatch ?? current ?? data.items[0] ?? null;
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "관제 CCTV 목록을 불러오지 못했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   React.useEffect(() => {
     if (!isReady) return;
 
     void Promise.resolve().then(() => {
       if (activeTab === "overview") return loadOverview();
+      if (activeTab === "monitor") return loadMonitoredCctvs();
       if (activeTab === "users") return loadUsers();
       if (activeTab === "posts") return loadPosts();
       return loadInquiries();
     });
-  }, [activeTab, isReady, loadOverview, loadUsers, loadPosts, loadInquiries]);
+  }, [activeTab, isReady, loadOverview, loadMonitoredCctvs, loadUsers, loadPosts, loadInquiries]);
 
   function refreshCurrent() {
     if (activeTab === "overview") void loadOverview();
+    if (activeTab === "monitor") void loadMonitoredCctvs();
     if (activeTab === "users") void loadUsers();
     if (activeTab === "posts") void loadPosts();
     if (activeTab === "inquiries") void loadInquiries();
@@ -287,6 +330,7 @@ export function AdminConsole() {
           <nav className="grid gap-2" aria-label="관리자 메뉴">
             {[
               { value: "overview", label: "대시보드", icon: LayoutDashboard },
+              { value: "monitor", label: "CCTV 관제", icon: Camera },
               { value: "users", label: "회원 관리", icon: Users },
               { value: "posts", label: "게시판 관리", icon: ClipboardList },
               { value: "inquiries", label: "문의 관리", icon: MessageSquare },
@@ -338,6 +382,14 @@ export function AdminConsole() {
           {notice ? <Alert tone="success" label={notice} /> : null}
 
           {activeTab === "overview" ? <OverviewPanel summary={summary} isLoading={isLoading} /> : null}
+          {activeTab === "monitor" ? (
+            <MonitorPanel
+              cctvs={monitoredCctvs}
+              selectedCctv={selectedCctv}
+              isLoading={isLoading}
+              onSelect={setSelectedCctv}
+            />
+          ) : null}
           {activeTab === "users" ? (
             <UsersPanel
               data={users}
@@ -425,6 +477,210 @@ function OverviewPanel({
       <div className="grid gap-5 xl:grid-cols-2">
         <AdminList title="최근 문의" posts={summary.latest_inquiries} />
         <AdminList title="최근 게시글" posts={summary.latest_posts} />
+      </div>
+    </div>
+  );
+}
+
+function MonitorPanel({
+  cctvs,
+  selectedCctv,
+  isLoading,
+  onSelect,
+}: {
+  cctvs: Cctv[];
+  selectedCctv: Cctv | null;
+  isLoading: boolean;
+  onSelect: (cctv: Cctv) => void;
+}) {
+  const [isFullscreenOpen, setIsFullscreenOpen] = React.useState(false);
+  const fullscreenRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!isFullscreenOpen) return;
+
+    fullscreenRef.current?.requestFullscreen?.().catch(() => {
+      // 브라우저 전체화면이 차단되어도 fixed 오버레이로 관제 화면은 유지된다.
+    });
+
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement) {
+        setIsFullscreenOpen(false);
+      }
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, [isFullscreenOpen]);
+
+  function closeFullscreen() {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    }
+    setIsFullscreenOpen(false);
+  }
+
+  if (isLoading && cctvs.length === 0) {
+    return <LoadingText label="관제 CCTV를 불러오는 중입니다." />;
+  }
+
+  if (cctvs.length === 0) {
+    return <EmptyText label="관제할 CCTV가 없습니다." />;
+  }
+
+  return (
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="min-w-0 overflow-hidden rounded-lg border border-warm-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="border-b border-warm-200 p-4 dark:border-slate-800">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-black uppercase text-flare-600 dark:text-flare-400">
+                Live Monitor
+              </p>
+              <h3 className="mt-1 truncate text-xl font-black text-slate-950 dark:text-cream-50">
+                {selectedCctv?.name ?? "CCTV 선택"}
+              </h3>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-2 rounded-full bg-danger-critical/10 px-3 py-1.5 text-xs font-black text-danger-critical">
+                <span className="size-2 rounded-full bg-danger-critical" />
+                실시간 관제
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="font-bold"
+                onClick={() => setIsFullscreenOpen(true)}
+              >
+                <Grid2X2 className="size-4" aria-hidden="true" />
+                전체화면 보기
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="bg-slate-950 p-4">
+          <CctvPlayer cctv={selectedCctv} />
+        </div>
+      </div>
+
+      <aside className="rounded-lg border border-warm-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-black text-slate-950 dark:text-cream-50">
+              WORKER 관제 CCTV
+            </h3>
+            <p className="mt-1 text-xs font-bold text-slate-500 dark:text-warm-300">
+              선택된 터널 CCTV {cctvs.length}대를 확인합니다.
+            </p>
+          </div>
+          <AlertTriangle className="size-5 shrink-0 text-flare-600 dark:text-flare-400" aria-hidden="true" />
+        </div>
+
+        <div className="grid gap-3">
+          {cctvs.map((cctv) => {
+            const selected = selectedCctv?.id === cctv.id;
+
+            return (
+              <button
+                key={cctv.id}
+                type="button"
+                className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                  selected
+                    ? "border-flare-500 bg-flare-500/10"
+                    : "border-warm-200 hover:bg-warm-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                }`}
+                onClick={() => onSelect(cctv)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-black text-slate-950 dark:text-cream-50">
+                      {cctv.name}
+                    </p>
+                    <p className="mt-1 truncate text-xs font-bold text-slate-500 dark:text-warm-300">
+                      {cctv.roadName || "도로 정보 없음"}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-black ${
+                    cctv.streamUrl
+                      ? "bg-process-resolved/10 text-process-resolved"
+                      : "bg-danger-critical/10 text-danger-critical"
+                  }`}>
+                    {cctv.streamUrl ? "LIVE" : "OFF"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      {isFullscreenOpen ? (
+        <FullscreenMonitor
+          cctvs={cctvs}
+          fullscreenRef={fullscreenRef}
+          onClose={closeFullscreen}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function FullscreenMonitor({
+  cctvs,
+  fullscreenRef,
+  onClose,
+}: {
+  cctvs: Cctv[];
+  fullscreenRef: React.RefObject<HTMLDivElement | null>;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      ref={fullscreenRef}
+      className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-cream-50"
+    >
+      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-800 px-5 py-4">
+        <div className="min-w-0">
+          <p className="text-xs font-black uppercase text-flare-400">
+            Control Center
+          </p>
+          <h3 className="mt-1 truncate text-2xl font-black">
+            WORKER CCTV 통합 관제
+          </h3>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="hidden items-center gap-2 rounded-full bg-danger-critical/15 px-3 py-1.5 text-xs font-black text-danger-critical sm:flex">
+            <span className="size-2 rounded-full bg-danger-critical" />
+            {cctvs.length}대 실시간 감시
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-10 rounded-full text-cream-50 hover:bg-slate-800"
+            aria-label="전체화면 닫기"
+            title="전체화면 닫기"
+            onClick={onClose}
+          >
+            <X className="size-5" aria-hidden="true" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 p-4">
+        <div className="grid h-full min-h-0 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          {cctvs.map((cctv) => (
+            <div
+              key={cctv.id}
+              className="min-h-0 overflow-hidden rounded-lg border border-slate-800 bg-slate-950 shadow-sm"
+            >
+              <CctvPlayer cctv={cctv} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -812,6 +1068,7 @@ function EmptyText({ label }: { label: string }) {
 }
 
 function tabTitle(tab: Tab) {
+  if (tab === "monitor") return "CCTV 관제";
   if (tab === "users") return "회원 관리";
   if (tab === "posts") return "게시판 관리";
   if (tab === "inquiries") return "문의 관리";

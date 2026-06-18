@@ -178,7 +178,7 @@ export function LiveCctvDashboard() {
   );
 }
 
-function CctvPlayer({ cctv }: { cctv: Cctv | null }) {
+export function CctvPlayer({ cctv }: { cctv: Cctv | null }) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   React.useEffect(() => {

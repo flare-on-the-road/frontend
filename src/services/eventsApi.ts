@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/stores/authStore";
-import type { Event, EventListResponse, ListEventsParams } from "@/types/event";
+import type { Event, EventListResponse, FireAlertResponse, ListEventsParams } from "@/types/event";
 
 class ApiRequestError extends Error {
   constructor(
@@ -61,6 +61,20 @@ export function fetchEvents(
 
 export function fetchEventDetail(accessToken: string, eventId: number) {
   return request<Event>(`/events/${eventId}`, accessToken);
+}
+
+export function fetchFireAlerts(
+  accessToken: string,
+  params: { afterId?: number | null; size?: number } = {},
+) {
+  const query = new URLSearchParams();
+  if (params.afterId !== undefined && params.afterId !== null) {
+    query.set("after_id", String(params.afterId));
+  }
+  if (params.size) query.set("size", String(params.size));
+
+  const qs = query.toString();
+  return request<FireAlertResponse>(`/events/fire-alerts${qs ? `?${qs}` : ""}`, accessToken);
 }
 
 export { ApiRequestError };
