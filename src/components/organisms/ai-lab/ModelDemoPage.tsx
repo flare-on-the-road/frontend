@@ -11,7 +11,6 @@ import {
   AI_LAB_MODELS,
   getSampleImageUrl,
   SAMPLE_IMAGES,
-  SAMPLE_RESULTS,
   THRESHOLD_DEFAULT,
   type DetectResults,
   type ModelKey,
@@ -65,17 +64,26 @@ export function ModelDemoPage() {
 
     async function run() {
       setError("");
+      setIsLoading(true);
 
       if (selectedImage.type === "sample") {
-        await sleep(INFERENCE_DELAY_MS);
-        if (!cancelled) setResults(SAMPLE_RESULTS[selectedImage.key] ?? null);
+        const [response] = await Promise.all([
+          detectImages(token, {
+            models: selectedModelKeys,
+            threshold: 0,
+            imageKey: selectedImage.key,
+          }),
+          sleep(INFERENCE_DELAY_MS),
+        ]);
+
+        if (!cancelled) setResults(response.results);
         return;
       }
 
       const imageBase64 = await fileToBase64(selectedImage.file);
       const [response] = await Promise.all([
         detectImages(token, {
-          models: ALL_MODEL_KEYS,
+          models: selectedModelKeys,
           threshold: 0,
           imageBase64,
         }),
@@ -106,7 +114,7 @@ export function ModelDemoPage() {
     return () => {
       cancelled = true;
     };
-  }, [isReady, accessToken, selectedImage]);
+  }, [isReady, accessToken, selectedImage, selectedModelKeys]);
 
   React.useEffect(() => {
     return () => {
