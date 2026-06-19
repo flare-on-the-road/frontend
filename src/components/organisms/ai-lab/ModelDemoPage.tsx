@@ -29,6 +29,11 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function formatApiErrorDetail(details?: Record<string, string>) {
+  if (!details) return "";
+  return Object.values(details).filter(Boolean).join(" ");
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -98,9 +103,7 @@ export function ModelDemoPage() {
       .catch((err) => {
         if (cancelled) return;
         const detail =
-          err instanceof ApiRequestError && err.details
-            ? err.details.reason ?? err.details.VISION_API_URL
-            : "";
+          err instanceof ApiRequestError ? formatApiErrorDetail(err.details) : "";
         setError(
           err instanceof ApiRequestError
             ? [err.message, detail].filter(Boolean).join(" ")
