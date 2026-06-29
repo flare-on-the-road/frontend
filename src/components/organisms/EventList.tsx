@@ -178,17 +178,30 @@ export function EventList() {
   );
 }
 
-function EventCard({ event }: { event: Event }) {
-  let fireBadge: React.ReactNode;
-  if (event.isFire === true) {
-    fireBadge = (
-      <Badge className="bg-danger-critical text-cream-50">화재 확정</Badge>
-    );
-  } else if (event.isFire === false) {
-    fireBadge = <Badge variant="secondary">오탐 처리</Badge>;
-  } else {
-    fireBadge = <Badge className="bg-flare-500 text-cream-50">탐지 후보</Badge>;
+function _resolveEventBadge(event: Event): React.ReactNode {
+  const results = event.vlmResults ?? [];
+
+  if (results.length === 0) {
+    // VLM 판단 전
+    return <Badge className="bg-flare-500 text-cream-50">탐지 후보</Badge>;
   }
+
+  if (event.isFire === true) {
+    return <Badge className="bg-danger-critical text-cream-50">화재 확정</Badge>;
+  }
+
+  const hasConfirmedFalsePositive = results.some(
+    (r) => r.class_name === "carlight" && r.is_false_positive,
+  );
+  if (hasConfirmedFalsePositive) {
+    return <Badge variant="secondary">오탐 확정</Badge>;
+  }
+
+  return <Badge variant="secondary">오탐 처리</Badge>;
+}
+
+function EventCard({ event }: { event: Event }) {
+  const fireBadge = _resolveEventBadge(event);
 
   return (
     <div className="overflow-hidden rounded-xl border border-warm-200 bg-warm-50 shadow-sm dark:border-slate-700 dark:bg-slate-800">

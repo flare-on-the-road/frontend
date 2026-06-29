@@ -4,6 +4,12 @@ export type Detection = {
   bbox: number[];
 };
 
+export type VlmResult = {
+  class_name: string;
+  is_false_positive: boolean;
+  reason: string;
+};
+
 export type Event = {
   id: number;
   cctvId: string;
@@ -11,7 +17,7 @@ export type Event = {
   locationName: string;
   detectedAt: string | null;
   isFire: boolean | null;
-  vlmReason: string | null;
+  vlmResults: VlmResult[];
   detections: Detection[];
   snapshotKey: string | null;
   snapshotUrl: string | null;
