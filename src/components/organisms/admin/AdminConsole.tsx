@@ -83,12 +83,17 @@ export function AdminConsole() {
   const [summary, setSummary] = React.useState<AdminSummary | null>(null);
   const [users, setUsers] = React.useState<AdminUsersResponse | null>(null);
   const [posts, setPosts] = React.useState<AdminPostsResponse | null>(null);
-  const [inquiries, setInquiries] = React.useState<AdminInquiriesResponse | null>(null);
+  const [inquiries, setInquiries] =
+    React.useState<AdminInquiriesResponse | null>(null);
   const [monitoredCctvs, setMonitoredCctvs] = React.useState<Cctv[]>([]);
   const [selectedCctv, setSelectedCctv] = React.useState<Cctv | null>(null);
-  const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(null);
+  const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(
+    null,
+  );
   const [userForm, setUserForm] = React.useState<AdminUserPayload>(EMPTY_FORM);
-  const [answerDrafts, setAnswerDrafts] = React.useState<Record<number, string>>({});
+  const [answerDrafts, setAnswerDrafts] = React.useState<
+    Record<number, string>
+  >({});
   const [error, setError] = React.useState("");
   const [notice, setNotice] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -141,7 +146,9 @@ export function AdminConsole() {
     setIsLoading(true);
     setError("");
     try {
-      setUsers(await fetchAdminUsers(accessToken, { ...userFilters, size: PAGE_SIZE }));
+      setUsers(
+        await fetchAdminUsers(accessToken, { ...userFilters, size: PAGE_SIZE }),
+      );
     } catch (err) {
       setError(toErrorMessage(err));
     } finally {
@@ -154,7 +161,9 @@ export function AdminConsole() {
     setIsLoading(true);
     setError("");
     try {
-      setPosts(await fetchAdminPosts(accessToken, { ...postFilters, size: PAGE_SIZE }));
+      setPosts(
+        await fetchAdminPosts(accessToken, { ...postFilters, size: PAGE_SIZE }),
+      );
     } catch (err) {
       setError(toErrorMessage(err));
     } finally {
@@ -167,7 +176,12 @@ export function AdminConsole() {
     setIsLoading(true);
     setError("");
     try {
-      setInquiries(await fetchAdminInquiries(accessToken, { ...inquiryFilters, size: PAGE_SIZE }));
+      setInquiries(
+        await fetchAdminInquiries(accessToken, {
+          ...inquiryFilters,
+          size: PAGE_SIZE,
+        }),
+      );
     } catch (err) {
       setError(toErrorMessage(err));
     } finally {
@@ -183,12 +197,18 @@ export function AdminConsole() {
       setMonitoredCctvs(data.items);
       setSelectedCctv((current) => {
         const pendingId = pendingCctvIdRef.current;
-        const pendingMatch = pendingId ? data.items.find((item) => item.id === pendingId) : null;
+        const pendingMatch = pendingId
+          ? data.items.find((item) => item.id === pendingId)
+          : null;
         pendingCctvIdRef.current = null;
         return pendingMatch ?? current ?? data.items[0] ?? null;
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "관제 CCTV 목록을 불러오지 못했습니다.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "관제 CCTV 목록을 불러오지 못했습니다.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -204,7 +224,15 @@ export function AdminConsole() {
       if (activeTab === "posts") return loadPosts();
       return loadInquiries();
     });
-  }, [activeTab, isReady, loadOverview, loadMonitoredCctvs, loadUsers, loadPosts, loadInquiries]);
+  }, [
+    activeTab,
+    isReady,
+    loadOverview,
+    loadMonitoredCctvs,
+    loadUsers,
+    loadPosts,
+    loadInquiries,
+  ]);
 
   function refreshCurrent() {
     if (activeTab === "overview") void loadOverview();
@@ -259,8 +287,12 @@ export function AdminConsole() {
   async function handleToggleUser(user: AdminUser) {
     if (!accessToken) return;
     try {
-      await updateAdminUser(accessToken, user.id, { is_active: !user.is_active });
-      setNotice(user.is_active ? "계정을 비활성화했습니다." : "계정을 활성화했습니다.");
+      await updateAdminUser(accessToken, user.id, {
+        is_active: !user.is_active,
+      });
+      setNotice(
+        user.is_active ? "계정을 비활성화했습니다." : "계정을 활성화했습니다.",
+      );
       await loadUsers();
       await loadOverview();
     } catch (err) {
@@ -276,7 +308,11 @@ export function AdminConsole() {
         setNotice("게시글을 다시 노출했습니다.");
       } else {
         await hideAdminPost(accessToken, post.id);
-        setNotice(post.board_type === "inquiry" ? "문의를 종료 처리했습니다." : "게시글을 가렸습니다.");
+        setNotice(
+          post.board_type === "inquiry"
+            ? "문의를 종료 처리했습니다."
+            : "게시글을 가렸습니다.",
+        );
       }
       await loadPosts();
       await loadInquiries();
@@ -369,10 +405,15 @@ export function AdminConsole() {
                 {tabTitle(activeTab)}
               </h2>
               <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-warm-300">
-                회원 동기화 보정, 게시글 노출, 문의 답변을 처리합니다.
+                {tabText(activeTab)}
               </p>
             </div>
-            <Button type="button" variant="outline" onClick={refreshCurrent} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={refreshCurrent}
+              disabled={isLoading}
+            >
               <RefreshCw className="size-4" aria-hidden="true" />
               새로고침
             </Button>
@@ -381,7 +422,9 @@ export function AdminConsole() {
           {error ? <Alert tone="danger" label={error} /> : null}
           {notice ? <Alert tone="success" label={notice} /> : null}
 
-          {activeTab === "overview" ? <OverviewPanel summary={summary} isLoading={isLoading} /> : null}
+          {activeTab === "overview" ? (
+            <OverviewPanel summary={summary} isLoading={isLoading} />
+          ) : null}
           {activeTab === "monitor" ? (
             <MonitorPanel
               cctvs={monitoredCctvs}
@@ -440,16 +483,37 @@ function OverviewPanel({
   summary: AdminSummary | null;
   isLoading: boolean;
 }) {
-  if (isLoading && !summary) return <LoadingText label="대시보드를 불러오는 중입니다." />;
+  if (isLoading && !summary)
+    return <LoadingText label="대시보드를 불러오는 중입니다." />;
   if (!summary) return <EmptyText label="표시할 운영 지표가 없습니다." />;
 
   const metrics = [
     { label: "전체 회원", value: summary.metrics.total_users, icon: Users },
-    { label: "활성 회원", value: summary.metrics.active_users, icon: UserCheck },
-    { label: "전체 게시글", value: summary.metrics.total_posts, icon: ClipboardList },
-    { label: "미답변 문의", value: summary.metrics.open_inquiries, icon: MessageSquare },
-    { label: "가려진 게시글", value: summary.metrics.hidden_posts, icon: EyeOff },
-    { label: "가려진 댓글", value: summary.metrics.hidden_comments, icon: ShieldCheck },
+    {
+      label: "활성 회원",
+      value: summary.metrics.active_users,
+      icon: UserCheck,
+    },
+    {
+      label: "전체 게시글",
+      value: summary.metrics.total_posts,
+      icon: ClipboardList,
+    },
+    {
+      label: "미답변 문의",
+      value: summary.metrics.open_inquiries,
+      icon: MessageSquare,
+    },
+    {
+      label: "가려진 게시글",
+      value: summary.metrics.hidden_posts,
+      icon: EyeOff,
+    },
+    {
+      label: "가려진 댓글",
+      value: summary.metrics.hidden_comments,
+      icon: ShieldCheck,
+    },
   ];
 
   return (
@@ -458,10 +522,15 @@ function OverviewPanel({
         {metrics.map((metric) => {
           const Icon = metric.icon;
           return (
-            <div key={metric.label} className="rounded-lg border border-warm-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <div
+              key={metric.label}
+              className="rounded-lg border border-warm-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
+            >
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-bold text-slate-500 dark:text-warm-300">{metric.label}</p>
+                  <p className="text-sm font-bold text-slate-500 dark:text-warm-300">
+                    {metric.label}
+                  </p>
                   <p className="mt-2 text-3xl font-black text-slate-950 dark:text-cream-50">
                     {metric.value.toLocaleString()}
                   </p>
@@ -576,7 +645,10 @@ function MonitorPanel({
               선택된 터널 CCTV {cctvs.length}대를 확인합니다.
             </p>
           </div>
-          <AlertTriangle className="size-5 shrink-0 text-flare-600 dark:text-flare-400" aria-hidden="true" />
+          <AlertTriangle
+            className="size-5 shrink-0 text-flare-600 dark:text-flare-400"
+            aria-hidden="true"
+          />
         </div>
 
         <div className="grid gap-3">
@@ -603,11 +675,13 @@ function MonitorPanel({
                       {cctv.roadName || "도로 정보 없음"}
                     </p>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-black ${
-                    cctv.streamUrl
-                      ? "bg-process-resolved/10 text-process-resolved"
-                      : "bg-danger-critical/10 text-danger-critical"
-                  }`}>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-black ${
+                      cctv.streamUrl
+                        ? "bg-process-resolved/10 text-process-resolved"
+                        : "bg-danger-critical/10 text-danger-critical"
+                    }`}
+                  >
                     {cctv.streamUrl ? "LIVE" : "OFF"}
                   </span>
                 </div>
@@ -699,66 +773,177 @@ function UsersPanel({
   onToggleUser,
 }: {
   data: AdminUsersResponse | null;
-  filters: { keyword: string; role: AdminRole | "all"; active: "all" | "true" | "false"; page: number };
+  filters: {
+    keyword: string;
+    role: AdminRole | "all";
+    active: "all" | "true" | "false";
+    page: number;
+  };
   form: AdminUserPayload;
   selectedUser: AdminUser | null;
   isLoading: boolean;
-  onFiltersChange: React.Dispatch<React.SetStateAction<{ keyword: string; role: AdminRole | "all"; active: "all" | "true" | "false"; page: number }>>;
+  onFiltersChange: React.Dispatch<
+    React.SetStateAction<{
+      keyword: string;
+      role: AdminRole | "all";
+      active: "all" | "true" | "false";
+      page: number;
+    }>
+  >;
   onFormChange: React.Dispatch<React.SetStateAction<AdminUserPayload>>;
   onOpenUser: (user?: AdminUser) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onToggleUser: (user: AdminUser) => void;
 }) {
-  const isSocialUser = Boolean(selectedUser && selectedUser.provider !== "local");
+  const isSocialUser = Boolean(
+    selectedUser && selectedUser.provider !== "local",
+  );
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
       <div className="min-w-0 space-y-4">
-        <FilterBar keyword={filters.keyword} onKeywordChange={(keyword) => onFiltersChange((prev) => ({ ...prev, keyword, page: 1 }))}>
-          <RoleSelect value={filters.role} onChange={(role) => onFiltersChange((prev) => ({ ...prev, role, page: 1 }))} includeAll />
-          <select value={filters.active} onChange={(event) => onFiltersChange((prev) => ({ ...prev, active: event.target.value as "all" | "true" | "false", page: 1 }))} className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold">
+        <FilterBar
+          keyword={filters.keyword}
+          onKeywordChange={(keyword) =>
+            onFiltersChange((prev) => ({ ...prev, keyword, page: 1 }))
+          }
+        >
+          <RoleSelect
+            value={filters.role}
+            onChange={(role) =>
+              onFiltersChange((prev) => ({ ...prev, role, page: 1 }))
+            }
+            includeAll
+          />
+          <select
+            value={filters.active}
+            onChange={(event) =>
+              onFiltersChange((prev) => ({
+                ...prev,
+                active: event.target.value as "all" | "true" | "false",
+                page: 1,
+              }))
+            }
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold"
+          >
             <option value="all">전체 상태</option>
             <option value="true">활성</option>
             <option value="false">비활성</option>
           </select>
         </FilterBar>
-        {isLoading && !data ? <LoadingText label="회원을 불러오는 중입니다." /> : null}
-        {data ? <UserTable users={data.users} onOpenUser={onOpenUser} onToggleUser={onToggleUser} /> : null}
-        <Pagination pagination={data?.pagination} onPageChange={(page) => onFiltersChange((prev) => ({ ...prev, page }))} />
+        {isLoading && !data ? (
+          <LoadingText label="회원을 불러오는 중입니다." />
+        ) : null}
+        {data ? (
+          <UserTable
+            users={data.users}
+            onOpenUser={onOpenUser}
+            onToggleUser={onToggleUser}
+          />
+        ) : null}
+        <Pagination
+          pagination={data?.pagination}
+          onPageChange={(page) =>
+            onFiltersChange((prev) => ({ ...prev, page }))
+          }
+        />
       </div>
-      <form onSubmit={onSubmit} className="space-y-3 rounded-lg border border-warm-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <form
+        onSubmit={onSubmit}
+        className="space-y-3 rounded-lg border border-warm-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+      >
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-black text-slate-950 dark:text-cream-50">
             {selectedUser ? "회원 정보 수정" : "신규 회원 생성"}
           </h3>
-          <Button type="button" variant="ghost" size="sm" onClick={() => onOpenUser()}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onOpenUser()}
+          >
             <Plus className="size-4" aria-hidden="true" />
             신규
           </Button>
         </div>
-        <Input value={form.email} onChange={(event) => onFormChange((prev) => ({ ...prev, email: event.target.value }))} placeholder="이메일" required />
-        <Input value={form.name} onChange={(event) => onFormChange((prev) => ({ ...prev, name: event.target.value }))} placeholder="이름" required />
         <Input
-          value={isSocialUser ? "" : form.password ?? ""}
-          onChange={(event) => onFormChange((prev) => ({ ...prev, password: event.target.value }))}
-          placeholder={isSocialUser ? "소셜 로그인 계정은 변경 불가" : selectedUser ? "새 비밀번호(선택)" : "초기 비밀번호"}
+          value={form.email}
+          onChange={(event) =>
+            onFormChange((prev) => ({ ...prev, email: event.target.value }))
+          }
+          placeholder="이메일"
+          required
+        />
+        <Input
+          value={form.name}
+          onChange={(event) =>
+            onFormChange((prev) => ({ ...prev, name: event.target.value }))
+          }
+          placeholder="이름"
+          required
+        />
+        <Input
+          value={isSocialUser ? "" : (form.password ?? "")}
+          onChange={(event) =>
+            onFormChange((prev) => ({ ...prev, password: event.target.value }))
+          }
+          placeholder={
+            isSocialUser
+              ? "소셜 로그인 계정은 변경 불가"
+              : selectedUser
+                ? "새 비밀번호(선택)"
+                : "초기 비밀번호"
+          }
           type="password"
           required={!selectedUser}
           disabled={isSocialUser}
         />
         {isSocialUser ? (
           <p className="text-xs font-bold text-slate-500 dark:text-warm-300">
-            {providerLabel(selectedUser?.provider ?? "")} 계정은 비밀번호를 서비스에서 관리하지 않습니다.
+            {providerLabel(selectedUser?.provider ?? "")} 계정은 비밀번호를
+            서비스에서 관리하지 않습니다.
           </p>
         ) : null}
-        <RoleSelect value={form.role} onChange={(role) => onFormChange((prev) => ({ ...prev, role: role as AdminRole }))} />
-        <Input value={form.department ?? ""} onChange={(event) => onFormChange((prev) => ({ ...prev, department: event.target.value }))} placeholder="부서" />
-        <Input value={form.phone ?? ""} onChange={(event) => onFormChange((prev) => ({ ...prev, phone: event.target.value }))} placeholder="연락처" />
+        <RoleSelect
+          value={form.role}
+          onChange={(role) =>
+            onFormChange((prev) => ({ ...prev, role: role as AdminRole }))
+          }
+        />
+        <Input
+          value={form.department ?? ""}
+          onChange={(event) =>
+            onFormChange((prev) => ({
+              ...prev,
+              department: event.target.value,
+            }))
+          }
+          placeholder="부서"
+        />
+        <Input
+          value={form.phone ?? ""}
+          onChange={(event) =>
+            onFormChange((prev) => ({ ...prev, phone: event.target.value }))
+          }
+          placeholder="연락처"
+        />
         <label className="flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-warm-200">
-          <input type="checkbox" checked={form.is_active} onChange={(event) => onFormChange((prev) => ({ ...prev, is_active: event.target.checked }))} />
+          <input
+            type="checkbox"
+            checked={form.is_active}
+            onChange={(event) =>
+              onFormChange((prev) => ({
+                ...prev,
+                is_active: event.target.checked,
+              }))
+            }
+          />
           활성 계정
         </label>
-        <Button type="submit" className="w-full bg-flare-500 font-bold hover:bg-flare-600">
+        <Button
+          type="submit"
+          className="w-full bg-flare-500 font-bold hover:bg-flare-600"
+        >
           <CheckCircle2 className="size-4" aria-hidden="true" />
           {selectedUser ? "수정 저장" : "회원 생성"}
         </Button>
@@ -775,20 +960,54 @@ function PostsPanel({
   onToggleVisibility,
 }: {
   data: AdminPostsResponse | null;
-  filters: { keyword: string; boardType: BoardType | "all"; visibility: "all" | "visible" | "hidden"; page: number };
+  filters: {
+    keyword: string;
+    boardType: BoardType | "all";
+    visibility: "all" | "visible" | "hidden";
+    page: number;
+  };
   isLoading: boolean;
-  onFiltersChange: React.Dispatch<React.SetStateAction<{ keyword: string; boardType: BoardType | "all"; visibility: "all" | "visible" | "hidden"; page: number }>>;
+  onFiltersChange: React.Dispatch<
+    React.SetStateAction<{
+      keyword: string;
+      boardType: BoardType | "all";
+      visibility: "all" | "visible" | "hidden";
+      page: number;
+    }>
+  >;
   onToggleVisibility: (post: AdminPost) => void;
 }) {
   return (
     <div className="space-y-4">
-      <FilterBar keyword={filters.keyword} onKeywordChange={(keyword) => onFiltersChange((prev) => ({ ...prev, keyword, page: 1 }))}>
-        <BoardSelect value={filters.boardType} onChange={(boardType) => onFiltersChange((prev) => ({ ...prev, boardType, page: 1 }))} />
-        <VisibilitySelect value={filters.visibility} onChange={(visibility) => onFiltersChange((prev) => ({ ...prev, visibility, page: 1 }))} />
+      <FilterBar
+        keyword={filters.keyword}
+        onKeywordChange={(keyword) =>
+          onFiltersChange((prev) => ({ ...prev, keyword, page: 1 }))
+        }
+      >
+        <BoardSelect
+          value={filters.boardType}
+          onChange={(boardType) =>
+            onFiltersChange((prev) => ({ ...prev, boardType, page: 1 }))
+          }
+        />
+        <VisibilitySelect
+          value={filters.visibility}
+          onChange={(visibility) =>
+            onFiltersChange((prev) => ({ ...prev, visibility, page: 1 }))
+          }
+        />
       </FilterBar>
-      {isLoading && !data ? <LoadingText label="게시글을 불러오는 중입니다." /> : null}
-      {data ? <PostTable posts={data.posts} onToggleVisibility={onToggleVisibility} /> : null}
-      <Pagination pagination={data?.pagination} onPageChange={(page) => onFiltersChange((prev) => ({ ...prev, page }))} />
+      {isLoading && !data ? (
+        <LoadingText label="게시글을 불러오는 중입니다." />
+      ) : null}
+      {data ? (
+        <PostTable posts={data.posts} onToggleVisibility={onToggleVisibility} />
+      ) : null}
+      <Pagination
+        pagination={data?.pagination}
+        onPageChange={(page) => onFiltersChange((prev) => ({ ...prev, page }))}
+      />
     </div>
   );
 }
@@ -804,50 +1023,116 @@ function InquiriesPanel({
   onToggleVisibility,
 }: {
   data: AdminInquiriesResponse | null;
-  filters: { keyword: string; status: "all" | "open" | "answered"; page: number };
+  filters: {
+    keyword: string;
+    status: "all" | "open" | "answered";
+    page: number;
+  };
   drafts: Record<number, string>;
   isLoading: boolean;
-  onFiltersChange: React.Dispatch<React.SetStateAction<{ keyword: string; status: "all" | "open" | "answered"; page: number }>>;
+  onFiltersChange: React.Dispatch<
+    React.SetStateAction<{
+      keyword: string;
+      status: "all" | "open" | "answered";
+      page: number;
+    }>
+  >;
   onDraftChange: (postId: number, content: string) => void;
   onAnswer: (postId: number) => void;
   onToggleVisibility: (post: AdminPost) => void;
 }) {
   return (
     <div className="space-y-4">
-      <FilterBar keyword={filters.keyword} onKeywordChange={(keyword) => onFiltersChange((prev) => ({ ...prev, keyword, page: 1 }))}>
-        <select value={filters.status} onChange={(event) => onFiltersChange((prev) => ({ ...prev, status: event.target.value as "all" | "open" | "answered", page: 1 }))} className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold">
+      <FilterBar
+        keyword={filters.keyword}
+        onKeywordChange={(keyword) =>
+          onFiltersChange((prev) => ({ ...prev, keyword, page: 1 }))
+        }
+      >
+        <select
+          value={filters.status}
+          onChange={(event) =>
+            onFiltersChange((prev) => ({
+              ...prev,
+              status: event.target.value as "all" | "open" | "answered",
+              page: 1,
+            }))
+          }
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold"
+        >
           <option value="all">전체 상태</option>
           <option value="open">미답변</option>
           <option value="answered">답변완료</option>
         </select>
       </FilterBar>
-      {isLoading && !data ? <LoadingText label="문의를 불러오는 중입니다." /> : null}
+      {isLoading && !data ? (
+        <LoadingText label="문의를 불러오는 중입니다." />
+      ) : null}
       {data ? (
         data.inquiries.length > 0 ? (
           <div className="grid gap-3">
             {data.inquiries.map((post) => (
-              <div key={post.id} className="rounded-lg border border-warm-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div
+                key={post.id}
+                className="rounded-lg border border-warm-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+              >
                 <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                   <div className="min-w-0">
                     <div className="mb-2 flex flex-wrap gap-2">
-                      <Badge variant={post.inquiry_status === "open" ? "secondary" : "default"}>{post.inquiry_status === "open" ? "미답변" : "답변완료"}</Badge>
-                      {post.is_hidden ? <Badge variant="destructive">종료</Badge> : <Badge variant="outline">진행중</Badge>}
+                      <Badge
+                        variant={
+                          post.inquiry_status === "open"
+                            ? "secondary"
+                            : "default"
+                        }
+                      >
+                        {post.inquiry_status === "open" ? "미답변" : "답변완료"}
+                      </Badge>
+                      {post.is_hidden ? (
+                        <Badge variant="destructive">종료</Badge>
+                      ) : (
+                        <Badge variant="outline">진행중</Badge>
+                      )}
                     </div>
-                    <Link href={`/inquiries/${post.id}`} className="block truncate text-base font-black text-slate-950 hover:text-flare-600 dark:text-cream-50 dark:hover:text-flare-400">
+                    <Link
+                      href={`/inquiries/${post.id}`}
+                      className="block truncate text-base font-black text-slate-950 hover:text-flare-600 dark:text-cream-50 dark:hover:text-flare-400"
+                    >
                       {post.title}
                     </Link>
                     <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-warm-300">
-                      {post.author_name} · {post.author_email} · {post.created_at ? formatDateTime(post.created_at) : "-"}
+                      {post.author_name} · {post.author_email} ·{" "}
+                      {post.created_at ? formatDateTime(post.created_at) : "-"}
                     </p>
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => onToggleVisibility(post)}>
-                    {post.is_hidden ? <Eye className="size-4" aria-hidden="true" /> : <EyeOff className="size-4" aria-hidden="true" />}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onToggleVisibility(post)}
+                  >
+                    {post.is_hidden ? (
+                      <Eye className="size-4" aria-hidden="true" />
+                    ) : (
+                      <EyeOff className="size-4" aria-hidden="true" />
+                    )}
                     {post.is_hidden ? "재개" : "종료"}
                   </Button>
                 </div>
                 <div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto]">
-                  <Textarea value={drafts[post.id] ?? ""} onChange={(event) => onDraftChange(post.id, event.target.value)} placeholder="관리자 답변을 입력하세요" className="min-h-24" />
-                  <Button type="button" className="bg-flare-500 font-bold hover:bg-flare-600 md:self-end" onClick={() => onAnswer(post.id)}>
+                  <Textarea
+                    value={drafts[post.id] ?? ""}
+                    onChange={(event) =>
+                      onDraftChange(post.id, event.target.value)
+                    }
+                    placeholder="관리자 답변을 입력하세요"
+                    className="min-h-24"
+                  />
+                  <Button
+                    type="button"
+                    className="bg-flare-500 font-bold hover:bg-flare-600 md:self-end"
+                    onClick={() => onAnswer(post.id)}
+                  >
                     <Send className="size-4" aria-hidden="true" />
                     답변 등록
                   </Button>
@@ -859,7 +1144,10 @@ function InquiriesPanel({
           <EmptyText label="조건에 맞는 문의가 없습니다." />
         )
       ) : null}
-      <Pagination pagination={data?.pagination} onPageChange={(page) => onFiltersChange((prev) => ({ ...prev, page }))} />
+      <Pagination
+        pagination={data?.pagination}
+        onPageChange={(page) => onFiltersChange((prev) => ({ ...prev, page }))}
+      />
     </div>
   );
 }
@@ -873,7 +1161,8 @@ function UserTable({
   onOpenUser: (user: AdminUser) => void;
   onToggleUser: (user: AdminUser) => void;
 }) {
-  if (users.length === 0) return <EmptyText label="조건에 맞는 회원이 없습니다." />;
+  if (users.length === 0)
+    return <EmptyText label="조건에 맞는 회원이 없습니다." />;
 
   return (
     <div className="overflow-x-auto rounded-lg border border-warm-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -892,20 +1181,42 @@ function UserTable({
           {users.map((user) => (
             <tr key={user.id}>
               <td className="px-4 py-3">
-                <p className="truncate font-black text-slate-950 dark:text-cream-50">{user.name}</p>
-                <p className="truncate text-xs font-semibold text-slate-500 dark:text-warm-300">{user.email}</p>
+                <p className="truncate font-black text-slate-950 dark:text-cream-50">
+                  {user.name}
+                </p>
+                <p className="truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
+                  {user.email}
+                </p>
               </td>
-              <td className="px-4 py-3 text-xs font-black">{roleLabel(user.role)}</td>
-              <td className="px-4 py-3"><StatusBadge active={user.is_active} /></td>
+              <td className="px-4 py-3 text-xs font-black">
+                {roleLabel(user.role)}
+              </td>
+              <td className="px-4 py-3">
+                <StatusBadge active={user.is_active} />
+              </td>
               <td className="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-warm-300">
                 <p className="truncate">{user.department || "부서 없음"}</p>
                 <p className="truncate">{user.phone || "연락처 없음"}</p>
               </td>
-              <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">{user.created_at ? formatDateShort(user.created_at) : "-"}</td>
+              <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">
+                {user.created_at ? formatDateShort(user.created_at) : "-"}
+              </td>
               <td className="px-4 py-3 text-right">
                 <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => onOpenUser(user)}>상세/수정</Button>
-                  <Button type="button" variant={user.is_active ? "outline" : "default"} size="sm" onClick={() => onToggleUser(user)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onOpenUser(user)}
+                  >
+                    상세/수정
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={user.is_active ? "outline" : "default"}
+                    size="sm"
+                    onClick={() => onToggleUser(user)}
+                  >
                     {user.is_active ? "비활성" : "활성"}
                   </Button>
                 </div>
@@ -918,8 +1229,15 @@ function UserTable({
   );
 }
 
-function PostTable({ posts, onToggleVisibility }: { posts: AdminPost[]; onToggleVisibility: (post: AdminPost) => void }) {
-  if (posts.length === 0) return <EmptyText label="조건에 맞는 게시글이 없습니다." />;
+function PostTable({
+  posts,
+  onToggleVisibility,
+}: {
+  posts: AdminPost[];
+  onToggleVisibility: (post: AdminPost) => void;
+}) {
+  if (posts.length === 0)
+    return <EmptyText label="조건에 맞는 게시글이 없습니다." />;
 
   return (
     <div className="overflow-x-auto rounded-lg border border-warm-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -938,20 +1256,54 @@ function PostTable({ posts, onToggleVisibility }: { posts: AdminPost[]; onToggle
         <tbody className="divide-y divide-warm-200 dark:divide-slate-800">
           {posts.map((post) => (
             <tr key={post.id}>
-              <td className="px-4 py-3"><Badge variant="secondary">{BOARD_LABELS[post.board_type]}</Badge></td>
               <td className="px-4 py-3">
-                <Link href={`/${boardPath(post.board_type)}/${post.id}`} className="block truncate font-black text-slate-950 hover:text-flare-600 dark:text-cream-50 dark:hover:text-flare-400">{post.title}</Link>
+                <Badge variant="secondary">
+                  {BOARD_LABELS[post.board_type]}
+                </Badge>
               </td>
               <td className="px-4 py-3">
-                <p className="truncate text-xs font-bold text-slate-700 dark:text-warm-200">{post.author_name}</p>
-                <p className="truncate text-xs font-semibold text-slate-500 dark:text-warm-300">{post.author_email}</p>
+                <Link
+                  href={`/${boardPath(post.board_type)}/${post.id}`}
+                  className="block truncate font-black text-slate-950 hover:text-flare-600 dark:text-cream-50 dark:hover:text-flare-400"
+                >
+                  {post.title}
+                </Link>
               </td>
-              <td className="px-4 py-3">{post.is_hidden ? <Badge variant="destructive">가려짐</Badge> : <Badge variant="outline">노출</Badge>}</td>
-              <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">조회 {post.view_count}<br />댓글 {post.comment_count}</td>
-              <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">{post.created_at ? formatDateShort(post.created_at) : "-"}</td>
+              <td className="px-4 py-3">
+                <p className="truncate text-xs font-bold text-slate-700 dark:text-warm-200">
+                  {post.author_name}
+                </p>
+                <p className="truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
+                  {post.author_email}
+                </p>
+              </td>
+              <td className="px-4 py-3">
+                {post.is_hidden ? (
+                  <Badge variant="destructive">가려짐</Badge>
+                ) : (
+                  <Badge variant="outline">노출</Badge>
+                )}
+              </td>
+              <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">
+                조회 {post.view_count}
+                <br />
+                댓글 {post.comment_count}
+              </td>
+              <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">
+                {post.created_at ? formatDateShort(post.created_at) : "-"}
+              </td>
               <td className="px-4 py-3 text-right">
-                <Button type="button" variant="outline" size="sm" onClick={() => onToggleVisibility(post)}>
-                  {post.is_hidden ? <Eye className="size-4" aria-hidden="true" /> : <EyeOff className="size-4" aria-hidden="true" />}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onToggleVisibility(post)}
+                >
+                  {post.is_hidden ? (
+                    <Eye className="size-4" aria-hidden="true" />
+                  ) : (
+                    <EyeOff className="size-4" aria-hidden="true" />
+                  )}
                   {post.is_hidden ? "해제" : "가리기"}
                 </Button>
               </td>
@@ -963,19 +1315,40 @@ function PostTable({ posts, onToggleVisibility }: { posts: AdminPost[]; onToggle
   );
 }
 
-function FilterBar({ keyword, onKeywordChange, children }: { keyword: string; onKeywordChange: (keyword: string) => void; children?: React.ReactNode }) {
+function FilterBar({
+  keyword,
+  onKeywordChange,
+  children,
+}: {
+  keyword: string;
+  onKeywordChange: (keyword: string) => void;
+  children?: React.ReactNode;
+}) {
   return (
-    <form className="flex flex-col gap-2 rounded-lg border border-warm-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:flex-row" onSubmit={(event) => {
-      event.preventDefault();
-      const formData = new FormData(event.currentTarget);
-      onKeywordChange(String(formData.get("keyword") ?? "").trim());
-    }}>
+    <form
+      className="flex flex-col gap-2 rounded-lg border border-warm-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:flex-row"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        onKeywordChange(String(formData.get("keyword") ?? "").trim());
+      }}
+    >
       <div className="relative min-w-0 flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-        <Input name="keyword" defaultValue={keyword} placeholder="이름, 이메일, 제목, 내용을 검색하세요" className="h-10 pl-9" />
+        <Input
+          name="keyword"
+          defaultValue={keyword}
+          placeholder="이름, 이메일, 제목, 내용을 검색하세요"
+          className="h-10 pl-9"
+        />
       </div>
       {children}
-      <Button type="submit" className="h-10 bg-flare-500 font-bold hover:bg-flare-600">검색</Button>
+      <Button
+        type="submit"
+        className="h-10 bg-flare-500 font-bold hover:bg-flare-600"
+      >
+        검색
+      </Button>
     </form>
   );
 }
@@ -983,36 +1356,81 @@ function FilterBar({ keyword, onKeywordChange, children }: { keyword: string; on
 function AdminList({ title, posts }: { title: string; posts: AdminPost[] }) {
   return (
     <div className="rounded-lg border border-warm-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-      <h3 className="text-lg font-black text-slate-950 dark:text-cream-50">{title}</h3>
+      <h3 className="text-lg font-black text-slate-950 dark:text-cream-50">
+        {title}
+      </h3>
       <div className="mt-4 divide-y divide-warm-200 dark:divide-slate-800">
-        {posts.length > 0 ? posts.map((post) => (
-          <Link key={post.id} href={`/${boardPath(post.board_type)}/${post.id}`} className="flex items-center justify-between gap-4 py-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-black text-slate-950 dark:text-cream-50">{post.title}</p>
-              <p className="mt-1 truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
-                {BOARD_LABELS[post.board_type]} · {post.author_name} · {post.created_at ? formatDateTime(post.created_at) : "-"}
-              </p>
-            </div>
-            {post.inquiry_status === "open" ? <Badge variant="secondary">미답변</Badge> : <ShieldCheck className="size-4 shrink-0 text-process-resolved" />}
-          </Link>
-        )) : <p className="py-6 text-center text-sm font-bold text-slate-500 dark:text-warm-300">항목이 없습니다.</p>}
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <Link
+              key={post.id}
+              href={`/${boardPath(post.board_type)}/${post.id}`}
+              className="flex items-center justify-between gap-4 py-3"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-black text-slate-950 dark:text-cream-50">
+                  {post.title}
+                </p>
+                <p className="mt-1 truncate text-xs font-semibold text-slate-500 dark:text-warm-300">
+                  {BOARD_LABELS[post.board_type]} · {post.author_name} ·{" "}
+                  {post.created_at ? formatDateTime(post.created_at) : "-"}
+                </p>
+              </div>
+              {post.inquiry_status === "open" ? (
+                <Badge variant="secondary">미답변</Badge>
+              ) : (
+                <ShieldCheck className="size-4 shrink-0 text-process-resolved" />
+              )}
+            </Link>
+          ))
+        ) : (
+          <p className="py-6 text-center text-sm font-bold text-slate-500 dark:text-warm-300">
+            항목이 없습니다.
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-function RoleSelect({ value, onChange, includeAll = false }: { value: AdminRole | "all"; onChange: (value: AdminRole | "all") => void; includeAll?: boolean }) {
+function RoleSelect({
+  value,
+  onChange,
+  includeAll = false,
+}: {
+  value: AdminRole | "all";
+  onChange: (value: AdminRole | "all") => void;
+  includeAll?: boolean;
+}) {
   return (
-    <select value={value} onChange={(event) => onChange(event.target.value as AdminRole | "all")} className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold">
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value as AdminRole | "all")}
+      className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold"
+    >
       {includeAll ? <option value="all">전체 역할</option> : null}
-      {ROLE_OPTIONS.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
+      {ROLE_OPTIONS.map((role) => (
+        <option key={role.value} value={role.value}>
+          {role.label}
+        </option>
+      ))}
     </select>
   );
 }
 
-function BoardSelect({ value, onChange }: { value: BoardType | "all"; onChange: (value: BoardType | "all") => void }) {
+function BoardSelect({
+  value,
+  onChange,
+}: {
+  value: BoardType | "all";
+  onChange: (value: BoardType | "all") => void;
+}) {
   return (
-    <select value={value} onChange={(event) => onChange(event.target.value as BoardType | "all")} className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold">
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value as BoardType | "all")}
+      className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold"
+    >
       <option value="all">전체 게시판</option>
       <option value="notice">공지</option>
       <option value="bug">버그</option>
@@ -1021,9 +1439,21 @@ function BoardSelect({ value, onChange }: { value: BoardType | "all"; onChange: 
   );
 }
 
-function VisibilitySelect({ value, onChange }: { value: "all" | "visible" | "hidden"; onChange: (value: "all" | "visible" | "hidden") => void }) {
+function VisibilitySelect({
+  value,
+  onChange,
+}: {
+  value: "all" | "visible" | "hidden";
+  onChange: (value: "all" | "visible" | "hidden") => void;
+}) {
   return (
-    <select value={value} onChange={(event) => onChange(event.target.value as "all" | "visible" | "hidden")} className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold">
+    <select
+      value={value}
+      onChange={(event) =>
+        onChange(event.target.value as "all" | "visible" | "hidden")
+      }
+      className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold"
+    >
       <option value="all">전체 노출</option>
       <option value="visible">노출</option>
       <option value="hidden">가려짐</option>
@@ -1031,40 +1461,68 @@ function VisibilitySelect({ value, onChange }: { value: "all" | "visible" | "hid
   );
 }
 
-function Pagination({ pagination, onPageChange }: { pagination?: { current_page: number; total_pages: number } | null; onPageChange: (page: number) => void }) {
+function Pagination({
+  pagination,
+  onPageChange,
+}: {
+  pagination?: { current_page: number; total_pages: number } | null;
+  onPageChange: (page: number) => void;
+}) {
   if (!pagination || pagination.total_pages <= 1) return null;
   const start = Math.max(1, pagination.current_page - 2);
   const end = Math.min(pagination.total_pages, start + 4);
 
   return (
     <div className="flex justify-center gap-2">
-      {Array.from({ length: end - start + 1 }, (_, index) => start + index).map((page) => (
-        <Button key={page} type="button" variant={page === pagination.current_page ? "default" : "outline"} size="sm" onClick={() => onPageChange(page)}>
-          {page}
-        </Button>
-      ))}
+      {Array.from({ length: end - start + 1 }, (_, index) => start + index).map(
+        (page) => (
+          <Button
+            key={page}
+            type="button"
+            variant={page === pagination.current_page ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPageChange(page)}
+          >
+            {page}
+          </Button>
+        ),
+      )}
     </div>
   );
 }
 
 function StatusBadge({ active }: { active: boolean }) {
-  return active ? <Badge className="bg-process-resolved text-cream-50">활성</Badge> : <Badge variant="destructive">비활성</Badge>;
+  return active ? (
+    <Badge className="bg-process-resolved text-cream-50">활성</Badge>
+  ) : (
+    <Badge variant="destructive">비활성</Badge>
+  );
 }
 
 function Alert({ tone, label }: { tone: "danger" | "success"; label: string }) {
   return (
-    <p className={`mb-4 rounded-lg px-4 py-3 text-sm font-bold ${tone === "danger" ? "bg-danger-critical/10 text-danger-critical" : "bg-process-resolved/10 text-process-resolved"}`}>
+    <p
+      className={`mb-4 rounded-lg px-4 py-3 text-sm font-bold ${tone === "danger" ? "bg-danger-critical/10 text-danger-critical" : "bg-process-resolved/10 text-process-resolved"}`}
+    >
       {label}
     </p>
   );
 }
 
 function LoadingText({ label }: { label: string }) {
-  return <p className="rounded-lg border border-dashed border-warm-300 p-8 text-center text-sm font-bold text-slate-500 dark:border-slate-800 dark:text-warm-300">{label}</p>;
+  return (
+    <p className="rounded-lg border border-dashed border-warm-300 p-8 text-center text-sm font-bold text-slate-500 dark:border-slate-800 dark:text-warm-300">
+      {label}
+    </p>
+  );
 }
 
 function EmptyText({ label }: { label: string }) {
-  return <p className="rounded-lg border border-dashed border-warm-300 p-8 text-center text-sm font-bold text-slate-500 dark:border-slate-800 dark:text-warm-300">{label}</p>;
+  return (
+    <p className="rounded-lg border border-dashed border-warm-300 p-8 text-center text-sm font-bold text-slate-500 dark:border-slate-800 dark:text-warm-300">
+      {label}
+    </p>
+  );
 }
 
 function tabTitle(tab: Tab) {
@@ -1073,6 +1531,18 @@ function tabTitle(tab: Tab) {
   if (tab === "posts") return "게시판 관리";
   if (tab === "inquiries") return "문의 관리";
   return "운영 대시보드";
+}
+
+function tabText(tab: Tab) {
+  if (tab === "monitor")
+    return "실시간 CCTV 관제 및 터널 CCTV 상태를 확인하실 수 있습니다.";
+  if (tab === "users")
+    return "회원 목록을 확인하고, 신규 회원을 생성하거나 기존 회원 정보를 수정하실 수 있습니다.";
+  if (tab === "posts")
+    return "공지, 버그, 문의 게시판의 게시글을 확인하고, 노출 상태를 변경하실 수 있습니다.";
+  if (tab === "inquiries")
+    return "문의 게시판의 게시글을 확인하고, 관리자 답변을 작성하거나 노출 상태를 변경하실 수 있습니다.";
+  return "운영 대시보드입니다.";
 }
 
 function roleLabel(role: AdminRole) {
