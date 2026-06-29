@@ -10,7 +10,13 @@ import {
   Wrench,
 } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/atoms";
 import { SectionHeader } from "@/components/molecules";
 import { Header } from "@/components/organisms";
 
@@ -22,8 +28,8 @@ const processItems = [
   },
   {
     icon: Bot,
-    title: "YOLOv11 AI 탐지",
-    description: "객체 인식 AI가 낙하물, 역주행, 사고를 즉각 탐지합니다.",
+    title: "RT-DETR AI 탐지",
+    description: "객체 인식 AI가 화재 위험성을 즉각 탐지합니다.",
   },
   {
     icon: Database,
@@ -61,12 +67,10 @@ export default function Home() {
         </div>
         <h1 className="text-5xl font-black leading-[0.95] text-slate-900 dark:text-cream-50 sm:text-6xl md:text-8xl lg:text-9xl">
           <span className="text-flare-500">Flare</span> on
-          <span className="mt-2 block">
-            the road
-          </span>
+          <span className="mt-2 block">the road</span>
         </h1>
         <p className="mt-14 text-sm font-black uppercase text-flare-600">
-          YOLOv11 AI · REAL-TIME
+          RT-DETR AI · REAL-TIME
         </p>
         <p className="mt-4 max-w-xl text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
           CCTV와 AI를 결합한 고속도로 안전 관제 플랫폼.

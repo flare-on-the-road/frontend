@@ -4,17 +4,17 @@ const capabilityItems = [
   {
     title: "01. ITS CCTV API 연동",
     description:
-      "전국 ITS CCTV API(5개 지점 선정)에서 CCTV 이름, 위치, 영상 URL을 수집하고 DB에 저장합니다.",
+      "전국 ITS CCTV API에서 CCTV 이름, 위치, 영상 URL을 수집하고 DB에 저장합니다.",
   },
   {
     title: "02. 프레임 순회 분석",
     description:
-      "모든 영상을 실시간 스트리밍 분석하지 않고 Worker가 1분마다 5개의 CCTV를 순회하며 프레임 단위로 분석합니다.",
+      "모든 영상을 실시간 스트리밍 분석하지 않고 Worker가 CCTV를 순회하며 프레임 단위로 분석합니다.",
   },
   {
     title: "03. 화재/연기 위험 판단",
     description:
-      "YOLO 또는 RT-DETR로 화재 위험 후보를 필터링하고 VLM이 화재, 연기, 후미등, 조명, 안개를 정밀 구분합니다.",
+      "RT-DETR로 화재 위험 후보를 필터링하고 VLM이 화재, 연기, 후미등, 조명, 안개를 정밀 구분합니다.",
   },
   {
     title: "04. 이벤트 기반 관제",
@@ -38,16 +38,16 @@ export function ProjectOverview() {
 
         <div className="grid gap-5 lg:grid-cols-2">
           <OverviewCard title="프로젝트 개요">
-            <strong>Flare on the road</strong>는 전국 ITS CCTV API(5개 CCTV
-            선정)를 활용하여 고속도로 CCTV 영상을 주기적으로 캡처해서 분석하고,
-            화재 및 연기 상황을 탐지하는 AI 기반 관제 시스템입니다.
+            <strong>Flare on the road</strong>는 전국 ITS CCTV API를 활용하여
+            고속도로 CCTV 영상을 주기적으로 캡처해서 분석하고, 화재 및 연기
+            상황을 탐지하는 AI 기반 관제 시스템입니다.
           </OverviewCard>
 
           <OverviewCard title="핵심 기술">
             본 시스템은 모든 CCTV 영상을 직접 실시간 분석하지 않고, CCTV를
             1분마다 순회하며 프레임 단위로 분석합니다. 플래어 팀에서 개발한 1차
-            탐지 모델(YOLOv8 / YOLOv11 / RT-DETR)이 위험 후보를 필터링하고, 2차
-            VLM이 실제 화재 여부와 오탐 가능성을 판단합니다.
+            탐지 모델(RT-DETR)이 위험 후보를 필터링하고, 2차 VLM이 실제 화재
+            여부와 오탐 가능성을 판단합니다.
           </OverviewCard>
         </div>
 

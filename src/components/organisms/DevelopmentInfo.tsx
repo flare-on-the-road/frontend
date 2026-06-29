@@ -18,7 +18,7 @@ const architectureItems = [
   },
   {
     title: "1차 AI 탐지",
-    detail: "YOLOv8 / YOLOv11 / RT-DETR",
+    detail: "RT-DETR",
     caption: "fire · smoke · carlight 후보 탐지",
   },
   {
@@ -49,7 +49,7 @@ const techStacks = [
   },
   {
     title: "AI Serving Server",
-    items: ["FastAPI", "YOLOv8 / YOLOv11 / RT-DETR", "gemini-3.1-flash-lite"],
+    items: ["FastAPI", "RT-DETR", "gemini-3.1-flash-lite"],
   },
   {
     title: "Worker",
