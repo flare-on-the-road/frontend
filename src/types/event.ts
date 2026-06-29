@@ -1,14 +1,18 @@
+export type Detection = {
+  label: string;
+  confidence: number;
+  bbox: number[];
+};
+
 export type Event = {
   id: number;
   cctvId: string;
   cctvName: string;
   locationName: string;
   detectedAt: string | null;
-  riskScore: number;
-  riskCandidate: boolean;
   isFire: boolean | null;
   vlmReason: string | null;
-  detectedClasses: string[];
+  detections: Detection[];
   snapshotKey: string | null;
   snapshotUrl: string | null;
   createdAt: string | null;

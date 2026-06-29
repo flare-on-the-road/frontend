@@ -208,25 +208,20 @@ function EventCard({ event }: { event: Event }) {
       </div>
 
       <div className="space-y-2 p-3">
-        <div className="flex items-start justify-between gap-2">
-          <p className="truncate text-sm font-black text-slate-900 dark:text-cream-50">
-            {event.locationName}
-          </p>
-          <span className="shrink-0 text-xs font-black text-flare-500">
-            {event.riskScore}점
-          </span>
-        </div>
+        <p className="truncate text-sm font-black text-slate-900 dark:text-cream-50">
+          {event.locationName}
+        </p>
         <p className="text-xs font-semibold text-slate-500 dark:text-warm-300">
           {event.detectedAt ? formatDateTime(event.detectedAt) : "-"}
         </p>
-        {event.detectedClasses.length > 0 ? (
+        {event.detections.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {event.detectedClasses.map((cls) => (
+            {event.detections.map((d, i) => (
               <span
-                key={cls}
+                key={i}
                 className="rounded-full bg-cream-100 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:bg-slate-700 dark:text-warm-200"
               >
-                {cls}
+                {d.label} {Math.round(d.confidence * 100)}%
               </span>
             ))}
           </div>
