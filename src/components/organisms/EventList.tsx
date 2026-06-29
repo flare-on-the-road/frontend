@@ -17,7 +17,7 @@ const POLL_INTERVAL_MS = 30_000;
 const IS_FIRE_OPTIONS = [
   { label: "전체", value: "" },
   { label: "화재 확정", value: "true" },
-  { label: "오탐 처리", value: "false" },
+  { label: "오탐 처리 / 오탐 확정", value: "false" },
 ];
 
 export function EventList() {
