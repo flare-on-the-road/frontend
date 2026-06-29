@@ -171,8 +171,8 @@ export function DevelopmentInfo() {
           </div>
         </InfoSection>
 
-        <InfoSection title="MVP & Expansion">
-          <div className="grid gap-7 lg:grid-cols-3">
+        <InfoSection title="MVP & Expansion" className="mt-10">
+          <div className="grid gap-7 lg:grid-cols-2">
             <ListPanel title="초기 MVP 범위" items={mvpItems} />
             <ListPanel title="향후 확장 방향" items={expansionItems} />
           </div>
