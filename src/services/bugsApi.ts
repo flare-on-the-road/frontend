@@ -32,6 +32,7 @@ async function request<T>(
   path: string,
   accessToken: string,
   init: RequestInit = {},
+  isRetry = false,
 ): Promise<T> {
   const isFormData = init.body instanceof FormData;
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -51,8 +52,11 @@ async function request<T>(
     const code = error.code ?? "UNKNOWN_ERROR";
     const message = error.message ?? "요청 처리 중 오류가 발생했습니다.";
 
-    if (code === "AUTH_REQUIRED" && typeof window !== "undefined") {
-      useAuthStore.getState().logout();
+    if (code === "AUTH_REQUIRED" && typeof window !== "undefined" && !isRetry) {
+      const newToken = await useAuthStore.getState().tryRefreshToken();
+      if (newToken) {
+        return request(path, newToken, init, true);
+      }
       window.location.href = "/login";
     }
 

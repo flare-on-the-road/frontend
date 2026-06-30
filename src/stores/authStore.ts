@@ -41,6 +41,7 @@ type AuthState = {
   changePassword: (payload: ChangePasswordPayload) => Promise<void>;
   setProfileImagePreviewUrl: (imageUrl: string | null) => void;
   logout: () => void;
+  tryRefreshToken: () => Promise<string | null>;
   setHydrated: (isHydrated: boolean) => void;
 };
 
@@ -179,6 +180,23 @@ export const useAuthStore = create<AuthState>()(
           status: "unauthenticated",
         });
       },
+      tryRefreshToken: async () => {
+        const { refreshToken } = get();
+
+        if (!refreshToken) {
+          get().logout();
+          return null;
+        }
+
+        try {
+          const refreshed = await refreshAccessToken(refreshToken);
+          set({ accessToken: refreshed.accessToken, status: "authenticated" });
+          return refreshed.accessToken;
+        } catch {
+          get().logout();
+          return null;
+        }
+      },
       setHydrated: (isHydrated) => {
         set({ isHydrated });
       },
@@ -264,5 +282,6 @@ function isTokenExpiredError(error: unknown) {
     return false;
   }
 
-  return error.message.toLowerCase().includes("token has expired");
+  const msg = error.message.toLowerCase();
+  return msg.includes("token has expired") || msg.includes("만료");
 }

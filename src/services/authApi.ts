@@ -17,7 +17,7 @@ type ApiEnvelope<T> = {
   message: string;
   data: T;
   msg?: string;
-  error?: string;
+  error?: string | { code?: string; message?: string };
   detail?: string;
 };
 
@@ -160,13 +160,13 @@ async function request<T>(path: string, init: RequestInit) {
 }
 
 function getErrorMessage<T>(payload: ApiEnvelope<T>) {
-  return (
-    payload.message ||
-    payload.msg ||
-    payload.error ||
-    payload.detail ||
-    "요청 처리 중 오류가 발생했습니다."
-  );
+  if (payload.message) return payload.message;
+  if (payload.msg) return payload.msg;
+  if (payload.error) {
+    if (typeof payload.error === "string") return payload.error;
+    return payload.error.message ?? "요청 처리 중 오류가 발생했습니다.";
+  }
+  return payload.detail ?? "요청 처리 중 오류가 발생했습니다.";
 }
 
 async function parseResponsePayload<T>(response: Response) {
