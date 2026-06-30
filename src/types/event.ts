@@ -16,7 +16,6 @@ export type Event = {
   cctvName: string;
   locationName: string;
   detectedAt: string | null;
-  isFire: boolean | null;
   vlmResults: VlmResult[];
   detections: Detection[];
   snapshotKey: string | null;

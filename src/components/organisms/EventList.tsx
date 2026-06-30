@@ -182,11 +182,13 @@ function _resolveEventBadge(event: Event): React.ReactNode {
   const results = event.vlmResults ?? [];
 
   if (results.length === 0) {
-    // VLM 판단 전
     return <Badge className="bg-flare-500 text-cream-50">탐지 후보</Badge>;
   }
 
-  if (event.isFire === true) {
+  const isConfirmedFire = results.some(
+    (r) => ["fire", "smoke"].includes(r.class_name) && !r.is_false_positive,
+  );
+  if (isConfirmedFire) {
     return <Badge className="bg-danger-critical text-cream-50">화재 확정</Badge>;
   }
 
