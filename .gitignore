@@ -292,4 +292,9 @@ sketch
 .history
 .ionide
 
+### Python venv ###
+.venv
+venv/
+venv.bak/
+
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,react,nextjs,node,pycharm+all

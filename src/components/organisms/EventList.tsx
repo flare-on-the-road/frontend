@@ -186,10 +186,18 @@ function _resolveEventBadge(event: Event): React.ReactNode {
   }
 
   const isConfirmedFire = results.some(
-    (r) => ["fire", "smoke"].includes(r.class_name) && !r.is_false_positive,
+    (r) =>
+      ["fire", "smoke"].includes(r.class_name) &&
+      !r.is_false_positive &&
+      !r.undetermined,
   );
   if (isConfirmedFire) {
     return <Badge className="bg-danger-critical text-cream-50">화재 확정</Badge>;
+  }
+
+  const needsReview = results.some((r) => r.undetermined);
+  if (needsReview) {
+    return <Badge className="bg-flare-500 text-cream-50">미확정 · 확인 필요</Badge>;
   }
 
   const hasConfirmedFalsePositive = results.some(

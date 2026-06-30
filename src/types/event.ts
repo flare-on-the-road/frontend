@@ -8,6 +8,7 @@ export type VlmResult = {
   class_name: string;
   is_false_positive: boolean;
   reason: string;
+  undetermined?: boolean;
 };
 
 export type Event = {
