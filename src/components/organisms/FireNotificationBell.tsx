@@ -183,7 +183,7 @@ function FireAlertPopup({
         <p className="text-sm font-semibold leading-6 text-slate-600 dark:text-warm-200">
           {event.locationName}에서 화재로 확정된 탐지 이벤트가 발생했습니다.
         </p>
-        {event.vlmResults?.length > 0 ? (
+        {Array.isArray(event.vlmResults) && event.vlmResults.length > 0 ? (
           <p className="rounded-md bg-warm-100 p-3 text-xs font-bold leading-5 text-slate-600 dark:bg-slate-800 dark:text-warm-200">
             {event.vlmResults
               .filter((r) => !r.is_false_positive)

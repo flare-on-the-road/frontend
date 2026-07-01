@@ -179,7 +179,8 @@ export function EventList() {
 }
 
 function _resolveEventBadge(event: Event): React.ReactNode {
-  const results = event.vlmResults ?? [];
+  // 옛 형식(vlm_results가 단일 dict)이 섞여 들어와도 렌더가 죽지 않도록 배열만 허용
+  const results = Array.isArray(event.vlmResults) ? event.vlmResults : [];
 
   if (results.length === 0) {
     return <Badge className="bg-flare-500 text-cream-50">탐지 후보</Badge>;
