@@ -18,6 +18,7 @@ import {
   X,
   UserCheck,
   Users,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
@@ -634,6 +635,16 @@ function OverviewPanel({
       label: "활성 회원",
       value: summary.metrics.active_users,
       icon: UserCheck,
+    },
+    {
+      label: "오늘 방문자",
+      value: summary.metrics.today_visitors,
+      icon: UsersRound,
+    },
+    {
+      label: "누적 방문자",
+      value: summary.metrics.total_visitors,
+      icon: Users,
     },
     {
       label: "전체 게시글",

@@ -41,6 +41,8 @@ export type AdminSummary = {
     hidden_posts: number;
     hidden_comments: number;
     open_inquiries: number;
+    total_visitors: number;
+    today_visitors: number;
   };
   board_counts: Record<BoardType, number>;
   latest_inquiries: AdminPost[];

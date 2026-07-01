@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 
-import { Footer } from "@/components/organisms";
+import { Footer, VisitTracker } from "@/components/organisms";
 
 import "./globals.css";
 
@@ -24,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <VisitTracker />
         {children}
         <Footer />
         <Toaster richColors position="top-center" />
