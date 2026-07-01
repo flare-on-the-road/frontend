@@ -213,7 +213,7 @@ export function DevProcessPage() {
               </div>
 
               <MediaBox
-                src="/ai-lab/dev-process/samples/01_tunnel_fire_accident.jpg"
+                src="/ai-lab/dev-process/01_tunnel_fire_accident.jpg"
                 alt="2022 과천 제2경인고속도로 터널 화재 사고"
                 caption="2022 과천 제2경인고속도로 터널 화재 — CCTV 미확인 및 오탐 누적으로 인한 초기 대응 지연 사례"
               />
@@ -290,7 +290,7 @@ export function DevProcessPage() {
                   ]}
                 />
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/02_data_growth_chart.png"
+                  src="/ai-lab/dev-process/02_data_growth_chart.png"
                   alt="V1 → V3 → V4 데이터 성장 추이"
                   caption="V1 → V3 → V4 데이터 성장 — 양적 확장보다 도메인 적합성과 약점 보강에 집중"
                 />
@@ -437,7 +437,7 @@ export function DevProcessPage() {
               <div>
                 <SubTitle>Multi-scale 증강의 의미</SubTitle>
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/03_multiscale_aug.png"
+                  src="/ai-lab/dev-process/03_multiscale_aug.png"
                   alt="Multi-scale 증강 시각화"
                   caption="Multi-scale 증강 (480/640/800px) — 다양한 거리·크기의 객체에 대한 강건성 확보"
                 />
@@ -464,7 +464,7 @@ export function DevProcessPage() {
               <div>
                 <SubTitle>부수 효과 — 데이터 균형의 간접적 위력</SubTitle>
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/03_v4_results.png"
+                  src="/ai-lab/dev-process/03_v4_results.png"
                   alt="V4 학습 결과 그래프"
                   caption="V4 학습 곡선 (results.png) — Loss 안정 감소 및 mAP 수렴 양상"
                 />
@@ -563,7 +563,7 @@ export function DevProcessPage() {
                   ]}
                 />
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/04_v3_vs_v4_map_chart.png"
+                  src="/ai-lab/dev-process/04_v3_vs_v4_map_chart.png"
                   alt="V3 vs V4 mAP@50 비교"
                   caption="test_300 독립 평가 기준 — V3 mAP@50 0.7857 → V4 mAP@50 0.9267 (+0.141)"
                 />
@@ -633,7 +633,7 @@ export function DevProcessPage() {
               </p>
 
               <MediaBox
-                src="/ai-lab/dev-process/samples/05_pipeline_architecture.png"
+                src="/ai-lab/dev-process/05_pipeline_architecture.png"
                 alt="전체 시스템 아키텍처 다이어그램"
                 caption="전체 시스템 아키텍처 — CCTV → RT-DETRv2 → VLM 재검증 → 관제센터 보고"
               />
@@ -739,7 +739,7 @@ export function DevProcessPage() {
                   </InfoBox>
                 </div>
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/06_v3_matrix.png"
+                  src="/ai-lab/dev-process/06_v3_matrix.png"
                   alt="V3 Confusion Matrix"
                   caption="V3 Confusion Matrix — 클래스 간 혼동은 적으나 background → smoke 오탐(0.82)이 잔존"
                 />
@@ -771,7 +771,7 @@ export function DevProcessPage() {
               <div className="space-y-4">
                 <SubTitle>V4 개선 — carlight 정조준 보강</SubTitle>
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/06_carlight_labeling.png"
+                  src="/ai-lab/dev-process/06_carlight_labeling.png"
                   alt="carlight 직접 라벨링 작업"
                   caption="Roboflow에서 carlight 전용 데이터 1,200장 직접 라벨링 — 외부 데이터에 의존하지 않고 약점을 직접 보강"
                 />
@@ -791,7 +791,7 @@ export function DevProcessPage() {
                   </p>
                 </InfoBox>
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/06_v4_results.png"
+                  src="/ai-lab/dev-process/06_v4_results.png"
                   alt="V4 학습 결과"
                   caption="V4 results.png — Loss 안정 감소, mAP 수렴 양상 (ep20 이후 plateau)"
                 />
@@ -831,7 +831,7 @@ export function DevProcessPage() {
                   </p>
                 </InfoBox>
                 <MediaBox
-                  src="/ai-lab/dev-process/samples/06_carlight_false_positive.jpg"
+                  src="/ai-lab/dev-process/06_carlight_false_positive.jpg"
                   alt="라이트 반사광 carlight 오탐 예시"
                   caption="V4 신규 한계 사례 — 터널 바닥 반사광이 carlight로 오탐된 케이스"
                 />

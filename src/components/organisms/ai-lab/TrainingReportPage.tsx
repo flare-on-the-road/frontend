@@ -411,20 +411,44 @@ export function TrainingReportPage() {
               </div>
 
               <div>
-                <SubTitle>Figure 2. Confusion Matrix (Normalized)</SubTitle>
+                <SubTitle>Figure 2. Confusion Matrix (절대값 기준)</SubTitle>
                 <ReportImage
                   src={`${base}/v4_confusion_matrix.png`}
                   alt="V4 Confusion Matrix"
-                  caption="Figure 2. V4 정규화 Confusion Matrix — 클래스 간 오분류 0, background→smoke 오탐 0.82→0.55 감소"
+                  caption="Figure 2. V4 Confusion Matrix — 클래스 간 오분류 사실상 0, background→smoke 오탐 대폭 감소"
                 />
-                <InfoBox className="mt-4">
-                  <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    <strong className="text-slate-900 dark:text-cream-50">주요 관찰:</strong>
-                    fire↔smoke↔carlight 간 오분류가 모두 0이다. 이는 각 클래스의 시각적 특성을 모델이 명확히 구분하고
-                    있음을 의미한다. 반면 <strong className="text-flare-600 dark:text-flare-400">background→carlight 오탐(0.34)이 V4에서 신규 발생</strong>했으며,
-                    이는 12번 섹션에서 다룬다.
-                  </p>
-                </InfoBox>
+                <div className="mt-4 space-y-3">
+                  <InfoBox>
+                    <p className="mb-2 text-base font-black text-flare-600 dark:text-flare-400">
+                      핵심 성과 ① — background → smoke 오탐 대폭 감소 (V3 대비)
+                    </p>
+                    <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
+                      V3에서 가장 큰 문제였던 background→smoke 오탐 비율이 <strong className="text-flare-600 dark:text-flare-400">0.82 → 0.55로 감소</strong>했다.
+                      절대 건수 기준 629건. carlight 데이터 보강만으로 이 개선이 달성되었다는 점은,
+                      <strong className="text-slate-900 dark:text-cream-50"> 클래스 간 데이터 균형이 배경 오탐 억제에 간접적 효과</strong>를 가짐을 실증한다.
+                      이는 본 시스템의 핵심 목표인 <strong className="text-slate-900 dark:text-cream-50">오탐 최소화</strong>에 대한 정량적 성과이다.
+                    </p>
+                  </InfoBox>
+                  <InfoBox>
+                    <p className="mb-2 text-base font-black text-slate-900 dark:text-cream-50">
+                      핵심 성과 ② — 클래스 간 오분류 사실상 0
+                    </p>
+                    <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
+                      fire↔smoke↔carlight 간 오분류가 모두 0건이다(smoke→fire 1건 예외).
+                      fire True 845건 중 오분류 0건, carlight True 624건 중 오분류 0건.
+                      각 클래스의 시각적 특성이 명확히 분리 학습되었음을 의미한다.
+                    </p>
+                  </InfoBox>
+                  <InfoBox>
+                    <p className="mb-2 text-base font-black text-slate-900 dark:text-cream-50">
+                      관찰 — background → carlight 신규 오탐 (388건)
+                    </p>
+                    <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
+                      V4에서 신규 발생한 유일한 유의미한 오탐. background를 carlight로 오탐한 절대 건수 <strong className="text-flare-600 dark:text-flare-400">388건</strong>,
+                      background 오탐 총량 대비 0.34의 비중. 자세한 원인과 대응은 12번 섹션 Limitation 2에서 다룬다.
+                    </p>
+                  </InfoBox>
+                </div>
               </div>
 
               <div>
@@ -910,7 +934,7 @@ export function TrainingReportPage() {
                     { file: "yolov8", modelLabel: "YOLOv8-l", tag: "smoke 미탐 ✗", tone: "danger" },
                     { file: "yolov11", modelLabel: "YOLOv11-l", tag: "smoke 미탐 ✗", tone: "danger" },
                     { file: "rtdetr-v3", modelLabel: "RT-DETRv2 V3", tag: "fire+smoke+carlight 완벽 ✅", tone: "best" },
-                    { file: "rtdetr-v4", modelLabel: "RT-DETRv2 V4", tag: "smoke+carlight, fire 미탐 ⚠", tone: "warn" },
+                    { file: "rtdetr-v4", modelLabel: "RT-DETRv2 V4", tag: "fire → carlight 오분류 ⚠", tone: "warn" },
                   ]}
                 />
                 <p className="mt-4 text-center text-sm font-semibold italic text-slate-500 dark:text-slate-400">
@@ -919,39 +943,52 @@ export function TrainingReportPage() {
               </div>
 
               <div>
-                <SubTitle>11.3. 정직한 한계 노출 — V4의 fire 미탐</SubTitle>
+                <SubTitle>11.3. 정직한 한계 노출 — V4의 fire → carlight 오분류</SubTitle>
                 <div className="space-y-3">
                   <InfoBox>
                     <p className="mb-2 text-base font-black text-slate-900 dark:text-cream-50">관찰</p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                      Case 6에서 V4는 smoke와 carlight를 정확히 탐지했으나 명확히 노출된 fire를 미탐하였다.
-                      동일 조건에서 V3는 3클래스를 모두 탐지했다.
-                      <strong className="text-flare-600 dark:text-flare-400"> 이는 V4가 모든 케이스에서 V3보다 우수하다는 명제가 성립하지 않음</strong>을 의미한다.
+                      Case 6에서 V4는 smoke를 정확히 탐지하고 뒤쪽 정상 차량들의 등화류를 carlight로 정확히 분리 인식하였다.
+                      그러나 <strong className="text-flare-600 dark:text-flare-400">명확히 노출된 화염을 fire가 아닌 carlight(신뢰도 0.67)로 오분류(misclassification)</strong>하였다.
+                      동일 조건에서 V3는 fire·smoke·carlight 3클래스를 모두 정확히 구분하였다.
+                      이는 <strong className="text-slate-900 dark:text-cream-50">단순 미탐(false negative)보다 위험한 오분류</strong>로,
+                      시스템이 화염을 "정상 차량 등화"로 확신할 위험이 있는 사례이다.
+                    </p>
+                  </InfoBox>
+                  <InfoBox>
+                    <p className="mb-2 text-base font-black text-slate-900 dark:text-cream-50">통계적 맥락 (중요)</p>
+                    <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
+                      <strong className="text-flare-600 dark:text-flare-400">test_300 전체 통계로는 fire → carlight 오분류가 0건</strong>이다.
+                      즉 Case 6의 오분류는 V4 모델 전반의 편향이 아니라 <strong className="text-slate-900 dark:text-cream-50">특정 조건에서 발생한 edge case</strong>이다.
+                      Confusion Matrix(Figure 2) 기준 fire True 845건 중 오분류는 전무하며, background 오탐으로만 13건이 존재한다.
                     </p>
                   </InfoBox>
                   <InfoBox>
                     <p className="mb-2 text-base font-black text-slate-900 dark:text-cream-50">원인 분석 (Hypothesis)</p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                      V4는 실제 CCTV 촬영 이미지를 중심으로 학습되었다. 반면 이 test 이미지는
+                      V4는 실제 CCTV 촬영 이미지를 중심으로 학습되었다. 반면 본 test 이미지는
                       <strong className="text-slate-900 dark:text-cream-50"> AI 생성 이미지(synthetic)</strong>로 판단되며,
-                      실제 CCTV의 화염 시각적 특성(노이즈, 압축 아티팩트, 특유의 색온도)과 편차가 있을 가능성이 있다.
+                      화염의 색감·텍스처가 실제 CCTV 화염과 편차가 있다.
+                      한편 V4는 carlight 어노테이션 +487% 보강으로 "차량 전면부의 밝은 광원" 패턴에 대한 표현이 강화되어 있어,
+                      synthetic 화염의 시각적 특성이 이 패턴과 유사하게 해석되며 오분류가 발생한 것으로 추정된다.
                       V3는 상대적으로 다양한 소스의 학습 데이터를 포함하여 이 편차에 더 관용적일 수 있다.
                     </p>
                   </InfoBox>
                   <InfoBox>
                     <p className="mb-2 text-base font-black text-slate-900 dark:text-cream-50">시스템 안전성 관점의 해석</p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                      fire를 미탐했음에도 <strong className="text-slate-900 dark:text-cream-50">smoke가 정확히 탐지되었다는 점</strong>은 중요하다.
+                      fire 오분류에도 불구하고 <strong className="text-slate-900 dark:text-cream-50">smoke가 정확히 탐지되었다는 점</strong>은 결정적이다.
                       본 시스템의 파이프라인은 smoke만으로도 알림을 발생시키며, VLM 재검증 단계에서 화재 상황임이 확정된다.
                       즉 이 케이스에서도 <strong className="text-flare-600 dark:text-flare-400">화재 알림은 정상적으로 발동</strong>된다.
-                      단일 클래스 미탐이 시스템 실패로 이어지지 않도록 <strong className="text-slate-900 dark:text-cream-50">다층 방어</strong>가 설계되어 있다.
+                      단일 클래스 오분류가 시스템 실패로 이어지지 않도록 <strong className="text-slate-900 dark:text-cream-50">다층 방어</strong>가 설계되어 있다.
                     </p>
                   </InfoBox>
                   <InfoBox>
                     <p className="mb-2 text-base font-black text-slate-900 dark:text-cream-50">V5 개선 방향</p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                      이 관찰은 V5 학습 데이터 구성에 <strong className="text-slate-900 dark:text-cream-50">AI 생성 이미지와 실제 CCTV 이미지의 혼합 검토</strong>가
-                      필요함을 시사한다. 이는 13번 섹션 V5 계획에서 구체화된다.
+                      이 관찰은 V5 학습 데이터 구성에 <strong className="text-slate-900 dark:text-cream-50">AI 생성 이미지와 실제 CCTV 이미지의 혼합 검토</strong> 및
+                      fire↔carlight 경계 케이스의 <strong className="text-slate-900 dark:text-cream-50">hard example mining</strong>이 필요함을 시사한다.
+                      이는 13번 섹션 V5 계획에서 구체화된다.
                     </p>
                   </InfoBox>
                 </div>
@@ -988,26 +1025,20 @@ export function TrainingReportPage() {
               </div>
 
               <div>
-                <SubTitle>Limitation 2. Background → carlight 신규 오탐 (0.34)</SubTitle>
+                <SubTitle>Limitation 2. Background → carlight 신규 오탐 (388건)</SubTitle>
                 <div className="rounded-lg border-2 border-warm-200 bg-cream-50 p-5 dark:border-slate-600 dark:bg-slate-900">
                   <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    <strong className="text-slate-900 dark:text-cream-50">관찰:</strong> V3에는 없던 항목. background를 carlight로 오탐하는 비율 0.34.
+                    <strong className="text-slate-900 dark:text-cream-50">관찰:</strong> V3에는 없던 항목. Confusion Matrix 기준 background를 carlight로 오탐한 절대 건수 <strong>388건</strong>,
+                    background 전체 오탐 대비 <strong className="text-flare-600 dark:text-flare-400">0.34</strong>의 비중을 차지한다.
                     <br />
-                    <strong className="text-slate-900 dark:text-cream-50">원인:</strong> carlight val 데이터가 81 → 624개로 확장되며 다양한 배경 조건에서의 오탐이 드러남.
+                    <strong className="text-slate-900 dark:text-cream-50">원인:</strong> carlight val 데이터가 81 → 624개로 확장되며 다양한 배경 조건(야간 반사광, 터널 조명 등)에서의 오탐이 드러남.
+                    이 한계 발견 자체가 val 셋 확장의 효과이다.
                     <br />
-                    <strong className="text-slate-900 dark:text-cream-50">특이 사례:</strong> event 3에서 <strong>소방차 경광등이 carlight로 오탐</strong>됨(신뢰도 0.75, 0.81).
-                    기술적으로는 등화류가 맞으나 운영자 관점에서 혼선 야기 가능.
+                    <strong className="text-slate-900 dark:text-cream-50">단기 관리:</strong> carlight threshold 0.60 이상으로 설정하여 다수 오탐을 필터링.
                     <br />
-                    <strong className="text-slate-900 dark:text-cream-50">단기 관리:</strong> carlight threshold 0.60 이상으로 설정.
-                    <br />
-                    <strong className="text-flare-600 dark:text-flare-400">V5 대응:</strong> 야간 반사광 hard negative sampling.
+                    <strong className="text-flare-600 dark:text-flare-400">V5 대응:</strong> 야간 반사광 hard negative sampling으로 배경-carlight 경계 명시적 학습.
                   </p>
                 </div>
-                <ReportImage
-                  src={`${base}/event3-rtdetr-v4-firetruck-fp.jpg`}
-                  alt="소방차 경광등 carlight 오탐 사례"
-                  caption="Figure 9. Limitation 2 실사례 — 소방차 경광등이 carlight로 오탐된 event 3"
-                />
               </div>
 
               <div>
@@ -1024,7 +1055,7 @@ export function TrainingReportPage() {
                 <ReportImage
                   src={`${base}/event21-rtdetr-v4-distant-smoke-miss.jpg`}
                   alt="원거리 연기 미탐 사례"
-                  caption="Figure 10. Limitation 3 실사례 — 원거리 대형 연기 기둥 미탐 (event 21)"
+                  caption="Figure 9. Limitation 3 실사례 — 원거리 대형 연기 기둥 미탐 (event 21)"
                 />
               </div>
             </div>
