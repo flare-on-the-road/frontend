@@ -1,6 +1,8 @@
 import type { BoardType, Pagination } from "@/types/board";
 
-export type AdminRole = "admin" | "operator" | "viewer";
+export type AdminRole = "admin" | "admin_viewer" | "operator" | "viewer";
+
+export type AdminAccessRequestStatus = "pending" | "approved" | "rejected";
 
 export type AdminUser = {
   id: number;
@@ -67,5 +69,25 @@ export type AdminPostsResponse = {
 
 export type AdminInquiriesResponse = {
   inquiries: AdminPost[];
+  pagination: Pagination;
+};
+
+export type AdminAccessRequest = {
+  id: number;
+  requester_id: number;
+  requester_name?: string | null;
+  requester_email?: string | null;
+  requester_role?: AdminRole | null;
+  status: AdminAccessRequestStatus;
+  reason?: string | null;
+  reviewed_by?: number | null;
+  reviewer_name?: string | null;
+  reviewed_at?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type AdminAccessRequestsResponse = {
+  requests: AdminAccessRequest[];
   pagination: Pagination;
 };

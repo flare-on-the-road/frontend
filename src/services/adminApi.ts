@@ -1,5 +1,8 @@
 import { useAuthStore } from "@/stores/authStore";
 import type {
+  AdminAccessRequest,
+  AdminAccessRequestsResponse,
+  AdminAccessRequestStatus,
   AdminInquiriesResponse,
   AdminPostsResponse,
   AdminRole,
@@ -225,4 +228,51 @@ export function answerAdminInquiry(
     method: "POST",
     body: JSON.stringify({ content }),
   });
+}
+
+export function fetchMyAdminAccessRequest(accessToken: string) {
+  return request<{ request: AdminAccessRequest | null }>(
+    "/admin/access-requests/me",
+    accessToken,
+  );
+}
+
+export function createAdminAccessRequest(accessToken: string, reason?: string) {
+  return request<AdminAccessRequest>("/admin/access-requests", accessToken, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export function fetchAdminAccessRequests(
+  accessToken: string,
+  params: {
+    page?: number;
+    size?: number;
+    status?: AdminAccessRequestStatus | "all";
+  } = {},
+) {
+  return request<AdminAccessRequestsResponse>(
+    `/admin/access-requests${buildQuery({
+      page: params.page,
+      size: params.size,
+      status: params.status === "all" ? undefined : params.status,
+    })}`,
+    accessToken,
+  );
+}
+
+export function reviewAdminAccessRequest(
+  accessToken: string,
+  requestId: number,
+  status: Exclude<AdminAccessRequestStatus, "pending">,
+) {
+  return request<AdminAccessRequest>(
+    `/admin/access-requests/${requestId}`,
+    accessToken,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    },
+  );
 }

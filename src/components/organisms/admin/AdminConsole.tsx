@@ -28,18 +28,25 @@ import { formatDateShort, formatDateTime } from "@/lib/format";
 import {
   AdminApiRequestError,
   answerAdminInquiry,
+  createAdminAccessRequest,
   createAdminUser,
+  fetchAdminAccessRequests,
   fetchAdminInquiries,
+  fetchMyAdminAccessRequest,
   fetchAdminPosts,
   fetchAdminSummary,
   fetchAdminUsers,
   hideAdminPost,
+  reviewAdminAccessRequest,
   unhideAdminPost,
   updateAdminUser,
 } from "@/services/adminApi";
 import { fetchMonitoredCctvs } from "@/services/cctvApi";
 import { CctvPlayer } from "@/components/organisms/LiveCctvDashboard";
 import type {
+  AdminAccessRequest,
+  AdminAccessRequestsResponse,
+  AdminAccessRequestStatus,
   AdminInquiriesResponse,
   AdminPost,
   AdminPostsResponse,
@@ -65,6 +72,7 @@ const EMPTY_FORM: AdminUserPayload = {
 
 const ROLE_OPTIONS: Array<{ value: AdminRole; label: string }> = [
   { value: "admin", label: "관리자" },
+  { value: "admin_viewer", label: "관리자 관전자" },
   { value: "operator", label: "운영자" },
   { value: "viewer", label: "사용자" },
 ];
@@ -75,16 +83,27 @@ const BOARD_LABELS: Record<BoardType, string> = {
   inquiry: "문의",
 };
 
-type Tab = "overview" | "monitor" | "users" | "posts" | "inquiries";
+type Tab =
+  | "overview"
+  | "monitor"
+  | "users"
+  | "posts"
+  | "inquiries"
+  | "accessRequests";
 
 export function AdminConsole() {
-  const { isReady, accessToken } = useRequireAdmin();
+  const { isReady, accessToken, canReadAdmin, canManageAdmin } =
+    useRequireAdmin();
   const [activeTab, setActiveTab] = React.useState<Tab>("overview");
   const [summary, setSummary] = React.useState<AdminSummary | null>(null);
   const [users, setUsers] = React.useState<AdminUsersResponse | null>(null);
   const [posts, setPosts] = React.useState<AdminPostsResponse | null>(null);
   const [inquiries, setInquiries] =
     React.useState<AdminInquiriesResponse | null>(null);
+  const [accessRequests, setAccessRequests] =
+    React.useState<AdminAccessRequestsResponse | null>(null);
+  const [myAccessRequest, setMyAccessRequest] =
+    React.useState<AdminAccessRequest | null>(null);
   const [monitoredCctvs, setMonitoredCctvs] = React.useState<Cctv[]>([]);
   const [selectedCctv, setSelectedCctv] = React.useState<Cctv | null>(null);
   const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(
@@ -112,6 +131,10 @@ export function AdminConsole() {
   const [inquiryFilters, setInquiryFilters] = React.useState({
     keyword: "",
     status: "all" as "all" | "open" | "answered",
+    page: 1,
+  });
+  const [accessRequestFilters, setAccessRequestFilters] = React.useState({
+    status: "pending" as AdminAccessRequestStatus | "all",
     page: 1,
   });
   const pendingCctvIdRef = React.useRef<string | null>(null);
@@ -189,6 +212,38 @@ export function AdminConsole() {
     }
   }, [accessToken, inquiryFilters]);
 
+  const loadAccessRequests = React.useCallback(async () => {
+    if (!accessToken || !canManageAdmin) return;
+    setIsLoading(true);
+    setError("");
+    try {
+      setAccessRequests(
+        await fetchAdminAccessRequests(accessToken, {
+          ...accessRequestFilters,
+          size: PAGE_SIZE,
+        }),
+      );
+    } catch (err) {
+      setError(toErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken, accessRequestFilters, canManageAdmin]);
+
+  const loadMyAccessRequest = React.useCallback(async () => {
+    if (!accessToken || canReadAdmin) return;
+    setIsLoading(true);
+    setError("");
+    try {
+      const result = await fetchMyAdminAccessRequest(accessToken);
+      setMyAccessRequest(result.request);
+    } catch (err) {
+      setError(toErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken, canReadAdmin]);
+
   const loadMonitoredCctvs = React.useCallback(async () => {
     setIsLoading(true);
     setError("");
@@ -216,17 +271,30 @@ export function AdminConsole() {
 
   React.useEffect(() => {
     if (!isReady) return;
+    if (!canReadAdmin) {
+      void Promise.resolve().then(loadMyAccessRequest);
+      return;
+    }
+    if (!canManageAdmin && activeTab === "accessRequests") {
+      window.setTimeout(() => setActiveTab("overview"), 0);
+      return;
+    }
 
     void Promise.resolve().then(() => {
       if (activeTab === "overview") return loadOverview();
       if (activeTab === "monitor") return loadMonitoredCctvs();
       if (activeTab === "users") return loadUsers();
       if (activeTab === "posts") return loadPosts();
+      if (activeTab === "accessRequests") return loadAccessRequests();
       return loadInquiries();
     });
   }, [
     activeTab,
+    canManageAdmin,
+    canReadAdmin,
     isReady,
+    loadAccessRequests,
+    loadMyAccessRequest,
     loadOverview,
     loadMonitoredCctvs,
     loadUsers,
@@ -235,11 +303,16 @@ export function AdminConsole() {
   ]);
 
   function refreshCurrent() {
+    if (!canReadAdmin) {
+      void loadMyAccessRequest();
+      return;
+    }
     if (activeTab === "overview") void loadOverview();
     if (activeTab === "monitor") void loadMonitoredCctvs();
     if (activeTab === "users") void loadUsers();
     if (activeTab === "posts") void loadPosts();
     if (activeTab === "inquiries") void loadInquiries();
+    if (activeTab === "accessRequests") void loadAccessRequests();
   }
 
   function openUserForm(user?: AdminUser) {
@@ -261,7 +334,7 @@ export function AdminConsole() {
 
   async function handleUserSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!accessToken) return;
+    if (!accessToken || !canManageAdmin) return;
     setNotice("");
     setError("");
 
@@ -285,7 +358,7 @@ export function AdminConsole() {
   }
 
   async function handleToggleUser(user: AdminUser) {
-    if (!accessToken) return;
+    if (!accessToken || !canManageAdmin) return;
     try {
       await updateAdminUser(accessToken, user.id, {
         is_active: !user.is_active,
@@ -301,7 +374,7 @@ export function AdminConsole() {
   }
 
   async function handlePostVisibility(post: AdminPost) {
-    if (!accessToken) return;
+    if (!accessToken || !canManageAdmin) return;
     try {
       if (post.is_hidden) {
         await unhideAdminPost(accessToken, post.id);
@@ -323,7 +396,7 @@ export function AdminConsole() {
   }
 
   async function handleAnswerInquiry(postId: number) {
-    if (!accessToken) return;
+    if (!accessToken || !canManageAdmin) return;
     const content = (answerDrafts[postId] ?? "").trim();
     if (!content) {
       setError("답변 내용을 입력해주세요.");
@@ -341,6 +414,38 @@ export function AdminConsole() {
     }
   }
 
+  async function handleRequestAdminAccess(reason: string) {
+    if (!accessToken) return;
+    setNotice("");
+    setError("");
+
+    try {
+      const request = await createAdminAccessRequest(accessToken, reason);
+      setMyAccessRequest(request);
+      setNotice("관리자 보드 열람 권한 요청을 보냈습니다.");
+    } catch (err) {
+      setError(toErrorMessage(err));
+    }
+  }
+
+  async function handleReviewAccessRequest(
+    requestId: number,
+    status: Exclude<AdminAccessRequestStatus, "pending">,
+  ) {
+    if (!accessToken || !canManageAdmin) return;
+    setNotice("");
+    setError("");
+
+    try {
+      await reviewAdminAccessRequest(accessToken, requestId, status);
+      setNotice(status === "approved" ? "권한 요청을 승인했습니다." : "권한 요청을 거절했습니다.");
+      await loadAccessRequests();
+      await loadUsers();
+    } catch (err) {
+      setError(toErrorMessage(err));
+    }
+  }
+
   if (!isReady) {
     return (
       <section className="px-5 py-12">
@@ -350,6 +455,36 @@ export function AdminConsole() {
       </section>
     );
   }
+
+  if (!canReadAdmin) {
+    return (
+      <AdminAccessRequestPanel
+        request={myAccessRequest}
+        isLoading={isLoading}
+        error={error}
+        notice={notice}
+        onRefresh={refreshCurrent}
+        onSubmit={handleRequestAdminAccess}
+      />
+    );
+  }
+
+  const navItems: Array<{ value: Tab; label: string; icon: typeof LayoutDashboard }> = [
+    { value: "overview", label: "대시보드", icon: LayoutDashboard },
+    { value: "monitor", label: "CCTV 관제", icon: Camera },
+    { value: "users", label: "회원 관리", icon: Users },
+    ...(canManageAdmin
+      ? [
+          {
+            value: "accessRequests" as Tab,
+            label: "권한 요청",
+            icon: ShieldCheck,
+          },
+        ]
+      : []),
+    { value: "posts", label: "게시판 관리", icon: ClipboardList },
+    { value: "inquiries", label: "문의 관리", icon: MessageSquare },
+  ];
 
   return (
     <section className="px-5 py-8 sm:px-8">
@@ -364,13 +499,7 @@ export function AdminConsole() {
             </h1>
           </div>
           <nav className="grid gap-2" aria-label="관리자 메뉴">
-            {[
-              { value: "overview", label: "대시보드", icon: LayoutDashboard },
-              { value: "monitor", label: "CCTV 관제", icon: Camera },
-              { value: "users", label: "회원 관리", icon: Users },
-              { value: "posts", label: "게시판 관리", icon: ClipboardList },
-              { value: "inquiries", label: "문의 관리", icon: MessageSquare },
-            ].map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <button
@@ -440,6 +569,7 @@ export function AdminConsole() {
               form={userForm}
               selectedUser={selectedUser}
               isLoading={isLoading}
+              canManage={canManageAdmin}
               onFiltersChange={setUserFilters}
               onFormChange={setUserForm}
               onOpenUser={openUserForm}
@@ -447,11 +577,21 @@ export function AdminConsole() {
               onToggleUser={handleToggleUser}
             />
           ) : null}
+          {activeTab === "accessRequests" ? (
+            <AccessRequestsPanel
+              data={accessRequests}
+              filters={accessRequestFilters}
+              isLoading={isLoading}
+              onFiltersChange={setAccessRequestFilters}
+              onReview={handleReviewAccessRequest}
+            />
+          ) : null}
           {activeTab === "posts" ? (
             <PostsPanel
               data={posts}
               filters={postFilters}
               isLoading={isLoading}
+              canManage={canManageAdmin}
               onFiltersChange={setPostFilters}
               onToggleVisibility={handlePostVisibility}
             />
@@ -462,6 +602,7 @@ export function AdminConsole() {
               filters={inquiryFilters}
               drafts={answerDrafts}
               isLoading={isLoading}
+              canManage={canManageAdmin}
               onFiltersChange={setInquiryFilters}
               onDraftChange={(postId, content) =>
                 setAnswerDrafts((prev) => ({ ...prev, [postId]: content }))
@@ -547,6 +688,192 @@ function OverviewPanel({
         <AdminList title="최근 문의" posts={summary.latest_inquiries} />
         <AdminList title="최근 게시글" posts={summary.latest_posts} />
       </div>
+    </div>
+  );
+}
+
+function AdminAccessRequestPanel({
+  request,
+  isLoading,
+  error,
+  notice,
+  onRefresh,
+  onSubmit,
+}: {
+  request: AdminAccessRequest | null;
+  isLoading: boolean;
+  error: string;
+  notice: string;
+  onRefresh: () => void;
+  onSubmit: (reason: string) => void;
+}) {
+  const [reason, setReason] = React.useState("");
+  const isPending = request?.status === "pending";
+  const isApproved = request?.status === "approved";
+
+  return (
+    <section className="px-5 py-12 sm:px-8">
+      <div className="mx-auto max-w-2xl rounded-lg border border-warm-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-black uppercase text-flare-600 dark:text-flare-400">
+          Admin Access
+        </p>
+        <h1 className="mt-2 text-2xl font-black text-slate-950 dark:text-cream-50">
+          관리자 보드 열람 권한 요청
+        </h1>
+        <p className="mt-3 text-sm font-semibold text-slate-500 dark:text-warm-300">
+          승인되면 회원 정보와 수정 기능을 제외한 관리자 보드를 읽기 전용으로 볼 수 있습니다.
+        </p>
+        <div className="mt-5 space-y-3">
+          {error ? <Alert tone="danger" label={error} /> : null}
+          {notice ? <Alert tone="success" label={notice} /> : null}
+          {request ? (
+            <div className="rounded-lg border border-warm-200 p-4 dark:border-slate-800">
+              <p className="text-sm font-black text-slate-950 dark:text-cream-50">
+                요청 상태: {accessRequestStatusLabel(request.status)}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-warm-300">
+                요청일 {request.created_at ? formatDateTime(request.created_at) : "-"}
+              </p>
+            </div>
+          ) : null}
+          {isApproved ? (
+            <Button type="button" onClick={onRefresh} className="bg-flare-500 font-bold hover:bg-flare-600">
+              <RefreshCw className="size-4" aria-hidden="true" />
+              권한 다시 확인
+            </Button>
+          ) : (
+            <form
+              className="space-y-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                onSubmit(reason);
+              }}
+            >
+              <Textarea
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                placeholder="요청 사유를 입력하세요"
+                className="min-h-28"
+                disabled={isPending || isLoading}
+              />
+              <Button
+                type="submit"
+                disabled={isPending || isLoading}
+                className="bg-flare-500 font-bold hover:bg-flare-600"
+              >
+                <ShieldCheck className="size-4" aria-hidden="true" />
+                {isPending ? "승인 대기 중" : "권한 요청"}
+              </Button>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AccessRequestsPanel({
+  data,
+  filters,
+  isLoading,
+  onFiltersChange,
+  onReview,
+}: {
+  data: AdminAccessRequestsResponse | null;
+  filters: { status: AdminAccessRequestStatus | "all"; page: number };
+  isLoading: boolean;
+  onFiltersChange: React.Dispatch<
+    React.SetStateAction<{
+      status: AdminAccessRequestStatus | "all";
+      page: number;
+    }>
+  >;
+  onReview: (
+    requestId: number,
+    status: Exclude<AdminAccessRequestStatus, "pending">,
+  ) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end rounded-lg border border-warm-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+        <select
+          value={filters.status}
+          onChange={(event) =>
+            onFiltersChange((prev) => ({
+              ...prev,
+              status: event.target.value as AdminAccessRequestStatus | "all",
+              page: 1,
+            }))
+          }
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm font-bold"
+        >
+          <option value="all">전체 상태</option>
+          <option value="pending">대기</option>
+          <option value="approved">승인</option>
+          <option value="rejected">거절</option>
+        </select>
+      </div>
+      {isLoading && !data ? <LoadingText label="권한 요청을 불러오는 중입니다." /> : null}
+      {data ? (
+        data.requests.length > 0 ? (
+          <div className="grid gap-3">
+            {data.requests.map((request) => (
+              <div
+                key={request.id}
+                className="rounded-lg border border-warm-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
+                  <div className="min-w-0">
+                    <Badge variant={request.status === "pending" ? "secondary" : "outline"}>
+                      {accessRequestStatusLabel(request.status)}
+                    </Badge>
+                    <h3 className="mt-2 truncate text-base font-black text-slate-950 dark:text-cream-50">
+                      {request.requester_name ?? "알 수 없음"}
+                    </h3>
+                    <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-warm-300">
+                      {request.requester_email ?? "-"} ·{" "}
+                      {request.created_at ? formatDateTime(request.created_at) : "-"}
+                    </p>
+                    {request.reason ? (
+                      <p className="mt-3 whitespace-pre-wrap text-sm font-semibold text-slate-600 dark:text-warm-200">
+                        {request.reason}
+                      </p>
+                    ) : null}
+                  </div>
+                  {request.status === "pending" ? (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="bg-flare-500 font-bold hover:bg-flare-600"
+                        onClick={() => onReview(request.id, "approved")}
+                      >
+                        <CheckCircle2 className="size-4" aria-hidden="true" />
+                        승인
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onReview(request.id, "rejected")}
+                      >
+                        <X className="size-4" aria-hidden="true" />
+                        거절
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyText label="조건에 맞는 권한 요청이 없습니다." />
+        )
+      ) : null}
+      <Pagination
+        pagination={data?.pagination}
+        onPageChange={(page) => onFiltersChange((prev) => ({ ...prev, page }))}
+      />
     </div>
   );
 }
@@ -766,6 +1093,7 @@ function UsersPanel({
   form,
   selectedUser,
   isLoading,
+  canManage,
   onFiltersChange,
   onFormChange,
   onOpenUser,
@@ -782,6 +1110,7 @@ function UsersPanel({
   form: AdminUserPayload;
   selectedUser: AdminUser | null;
   isLoading: boolean;
+  canManage: boolean;
   onFiltersChange: React.Dispatch<
     React.SetStateAction<{
       keyword: string;
@@ -800,7 +1129,11 @@ function UsersPanel({
   );
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+    <div
+      className={
+        canManage ? "grid gap-5 xl:grid-cols-[1fr_360px]" : "space-y-4"
+      }
+    >
       <div className="min-w-0 space-y-4">
         <FilterBar
           keyword={filters.keyword}
@@ -837,6 +1170,7 @@ function UsersPanel({
         {data ? (
           <UserTable
             users={data.users}
+            canManage={canManage}
             onOpenUser={onOpenUser}
             onToggleUser={onToggleUser}
           />
@@ -848,6 +1182,7 @@ function UsersPanel({
           }
         />
       </div>
+      {!canManage ? null : (
       <form
         onSubmit={onSubmit}
         className="space-y-3 rounded-lg border border-warm-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
@@ -948,6 +1283,7 @@ function UsersPanel({
           {selectedUser ? "수정 저장" : "회원 생성"}
         </Button>
       </form>
+      )}
     </div>
   );
 }
@@ -956,6 +1292,7 @@ function PostsPanel({
   data,
   filters,
   isLoading,
+  canManage,
   onFiltersChange,
   onToggleVisibility,
 }: {
@@ -967,6 +1304,7 @@ function PostsPanel({
     page: number;
   };
   isLoading: boolean;
+  canManage: boolean;
   onFiltersChange: React.Dispatch<
     React.SetStateAction<{
       keyword: string;
@@ -1002,7 +1340,11 @@ function PostsPanel({
         <LoadingText label="게시글을 불러오는 중입니다." />
       ) : null}
       {data ? (
-        <PostTable posts={data.posts} onToggleVisibility={onToggleVisibility} />
+        <PostTable
+          posts={data.posts}
+          canManage={canManage}
+          onToggleVisibility={onToggleVisibility}
+        />
       ) : null}
       <Pagination
         pagination={data?.pagination}
@@ -1017,6 +1359,7 @@ function InquiriesPanel({
   filters,
   drafts,
   isLoading,
+  canManage,
   onFiltersChange,
   onDraftChange,
   onAnswer,
@@ -1030,6 +1373,7 @@ function InquiriesPanel({
   };
   drafts: Record<number, string>;
   isLoading: boolean;
+  canManage: boolean;
   onFiltersChange: React.Dispatch<
     React.SetStateAction<{
       keyword: string;
@@ -1105,38 +1449,42 @@ function InquiriesPanel({
                       {post.created_at ? formatDateTime(post.created_at) : "-"}
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onToggleVisibility(post)}
-                  >
-                    {post.is_hidden ? (
-                      <Eye className="size-4" aria-hidden="true" />
-                    ) : (
-                      <EyeOff className="size-4" aria-hidden="true" />
-                    )}
-                    {post.is_hidden ? "재개" : "종료"}
-                  </Button>
+                  {canManage ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onToggleVisibility(post)}
+                    >
+                      {post.is_hidden ? (
+                        <Eye className="size-4" aria-hidden="true" />
+                      ) : (
+                        <EyeOff className="size-4" aria-hidden="true" />
+                      )}
+                      {post.is_hidden ? "재개" : "종료"}
+                    </Button>
+                  ) : null}
                 </div>
-                <div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto]">
-                  <Textarea
-                    value={drafts[post.id] ?? ""}
-                    onChange={(event) =>
-                      onDraftChange(post.id, event.target.value)
-                    }
-                    placeholder="관리자 답변을 입력하세요"
-                    className="min-h-24"
-                  />
-                  <Button
-                    type="button"
-                    className="bg-flare-500 font-bold hover:bg-flare-600 md:self-end"
-                    onClick={() => onAnswer(post.id)}
-                  >
-                    <Send className="size-4" aria-hidden="true" />
-                    답변 등록
-                  </Button>
-                </div>
+                {canManage ? (
+                  <div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto]">
+                    <Textarea
+                      value={drafts[post.id] ?? ""}
+                      onChange={(event) =>
+                        onDraftChange(post.id, event.target.value)
+                      }
+                      placeholder="관리자 답변을 입력하세요"
+                      className="min-h-24"
+                    />
+                    <Button
+                      type="button"
+                      className="bg-flare-500 font-bold hover:bg-flare-600 md:self-end"
+                      onClick={() => onAnswer(post.id)}
+                    >
+                      <Send className="size-4" aria-hidden="true" />
+                      답변 등록
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
@@ -1154,10 +1502,12 @@ function InquiriesPanel({
 
 function UserTable({
   users,
+  canManage,
   onOpenUser,
   onToggleUser,
 }: {
   users: AdminUser[];
+  canManage: boolean;
   onOpenUser: (user: AdminUser) => void;
   onToggleUser: (user: AdminUser) => void;
 }) {
@@ -1174,7 +1524,9 @@ function UserTable({
             <th className="w-24 px-4 py-3">상태</th>
             <th className="px-4 py-3">부서/연락처</th>
             <th className="w-28 px-4 py-3">가입일</th>
-            <th className="w-44 px-4 py-3 text-right">관리</th>
+            {canManage ? (
+              <th className="w-44 px-4 py-3 text-right">관리</th>
+            ) : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-warm-200 dark:divide-slate-800">
@@ -1201,26 +1553,28 @@ function UserTable({
               <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">
                 {user.created_at ? formatDateShort(user.created_at) : "-"}
               </td>
-              <td className="px-4 py-3 text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onOpenUser(user)}
-                  >
-                    상세/수정
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={user.is_active ? "outline" : "default"}
-                    size="sm"
-                    onClick={() => onToggleUser(user)}
-                  >
-                    {user.is_active ? "비활성" : "활성"}
-                  </Button>
-                </div>
-              </td>
+              {canManage ? (
+                <td className="px-4 py-3 text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onOpenUser(user)}
+                    >
+                      상세/수정
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={user.is_active ? "outline" : "default"}
+                      size="sm"
+                      onClick={() => onToggleUser(user)}
+                    >
+                      {user.is_active ? "비활성" : "활성"}
+                    </Button>
+                  </div>
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
@@ -1231,9 +1585,11 @@ function UserTable({
 
 function PostTable({
   posts,
+  canManage,
   onToggleVisibility,
 }: {
   posts: AdminPost[];
+  canManage: boolean;
   onToggleVisibility: (post: AdminPost) => void;
 }) {
   if (posts.length === 0)
@@ -1250,7 +1606,9 @@ function PostTable({
             <th className="w-28 px-4 py-3">상태</th>
             <th className="w-24 px-4 py-3">반응</th>
             <th className="w-28 px-4 py-3">작성일</th>
-            <th className="w-32 px-4 py-3 text-right">관리</th>
+            {canManage ? (
+              <th className="w-32 px-4 py-3 text-right">관리</th>
+            ) : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-warm-200 dark:divide-slate-800">
@@ -1292,21 +1650,23 @@ function PostTable({
               <td className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-warm-300">
                 {post.created_at ? formatDateShort(post.created_at) : "-"}
               </td>
-              <td className="px-4 py-3 text-right">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onToggleVisibility(post)}
-                >
-                  {post.is_hidden ? (
-                    <Eye className="size-4" aria-hidden="true" />
-                  ) : (
-                    <EyeOff className="size-4" aria-hidden="true" />
-                  )}
-                  {post.is_hidden ? "해제" : "가리기"}
-                </Button>
-              </td>
+              {canManage ? (
+                <td className="px-4 py-3 text-right">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onToggleVisibility(post)}
+                  >
+                    {post.is_hidden ? (
+                      <Eye className="size-4" aria-hidden="true" />
+                    ) : (
+                      <EyeOff className="size-4" aria-hidden="true" />
+                    )}
+                    {post.is_hidden ? "해제" : "가리기"}
+                  </Button>
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
@@ -1528,6 +1888,7 @@ function EmptyText({ label }: { label: string }) {
 function tabTitle(tab: Tab) {
   if (tab === "monitor") return "CCTV 관제";
   if (tab === "users") return "회원 관리";
+  if (tab === "accessRequests") return "권한 요청";
   if (tab === "posts") return "게시판 관리";
   if (tab === "inquiries") return "문의 관리";
   return "운영 대시보드";
@@ -1537,12 +1898,20 @@ function tabText(tab: Tab) {
   if (tab === "monitor")
     return "실시간 CCTV 관제 및 터널 CCTV 상태를 확인하실 수 있습니다.";
   if (tab === "users")
-    return "회원 목록을 확인하고, 신규 회원을 생성하거나 기존 회원 정보를 수정하실 수 있습니다.";
+    return "회원 목록과 계정 상태를 확인할 수 있습니다.";
+  if (tab === "accessRequests")
+    return "일반 사용자의 관리자 보드 열람 권한 요청을 승인하거나 거절할 수 있습니다.";
   if (tab === "posts")
     return "공지, 버그, 문의 게시판의 게시글을 확인하고, 노출 상태를 변경하실 수 있습니다.";
   if (tab === "inquiries")
     return "문의 게시판의 게시글을 확인하고, 관리자 답변을 작성하거나 노출 상태를 변경하실 수 있습니다.";
   return "운영 대시보드입니다.";
+}
+
+function accessRequestStatusLabel(status: AdminAccessRequestStatus) {
+  if (status === "approved") return "승인";
+  if (status === "rejected") return "거절";
+  return "대기";
 }
 
 function roleLabel(role: AdminRole) {

@@ -20,17 +20,19 @@ export function useRequireAdmin() {
       return;
     }
 
-    if (user && user.role !== "admin") {
-      router.replace("/");
-    }
   }, [isHydrated, status, user, router]);
+
+  const canReadAdmin =
+    user?.role === "admin" || user?.role === "admin_viewer";
+  const canManageAdmin = user?.role === "admin";
 
   return {
     isReady:
       isHydrated &&
       status === "authenticated" &&
-      Boolean(accessToken) &&
-      user?.role === "admin",
+      Boolean(accessToken),
+    canReadAdmin,
+    canManageAdmin,
     accessToken,
     user,
   };

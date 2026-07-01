@@ -1,6 +1,14 @@
 "use client";
 
-import { Bot, Camera, ClipboardList, Info, LogOut, Settings, UserCircle } from "lucide-react";
+import {
+  Bot,
+  Camera,
+  ClipboardList,
+  Info,
+  LogOut,
+  Settings,
+  UserCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -39,6 +47,8 @@ export function Header() {
     (state) => state.profileImagePreviewUrl,
   );
   const logout = useAuthStore((state) => state.logout);
+  const canOpenAdminBoard =
+    user?.role === "admin" || user?.role === "admin_viewer";
 
   function handleLogout() {
     logout();
@@ -130,7 +140,7 @@ export function Header() {
               </Link>
             </Button>
           )}
-          {user?.role === "admin" ? (
+          {canOpenAdminBoard ? (
             <Button
               asChild
               variant="ghost"
@@ -155,6 +165,9 @@ export function Header() {
             ...cctvMenuItems,
             ...aiLabMenuItems,
             ...boardMenuItems,
+            ...(canOpenAdminBoard
+              ? [{ label: "관리자 보드", href: "/admin" }]
+              : []),
           ].map((item) => (
             <Link key={item.label} href={item.href}>
               {item.label}
