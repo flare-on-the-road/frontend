@@ -57,11 +57,12 @@ export function FireNotificationBell() {
 
   React.useEffect(() => {
     if (!accessToken || !user) return;
+    const token = accessToken;
     let cancelled = false;
 
     async function poll() {
       try {
-        const data = await fetchFireAlerts(accessToken, {
+        const data = await fetchFireAlerts(token, {
           afterId: lastFetchedIdRef.current,
           size: 20,
         });
