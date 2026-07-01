@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Button, Logo, ThemeToggle } from "@/components/atoms";
+import { normalizeProfileImageUrl } from "@/lib/profile-image";
 import { useAuthStore } from "@/stores/authStore";
 import { FireNotificationBell } from "./FireNotificationBell";
 
@@ -213,13 +214,15 @@ function ProfileAvatar({
   imageUrl?: string | null;
   name: string;
 }) {
-  if (imageUrl) {
+  const normalizedImageUrl = normalizeProfileImageUrl(imageUrl);
+
+  if (normalizedImageUrl) {
     return (
       <span
         aria-label={`${name} 프로필 이미지`}
         className="inline-block size-9 shrink-0 rounded-full bg-cover bg-center"
         role="img"
-        style={{ backgroundImage: `url(${imageUrl})` }}
+        style={{ backgroundImage: `url(${normalizedImageUrl})` }}
       />
     );
   }

@@ -13,6 +13,7 @@ import {
   CardTitle,
   Input,
 } from "@/components/atoms";
+import { normalizeProfileImageUrl } from "@/lib/profile-image";
 import { useAuthStore } from "@/stores/authStore";
 
 export function MyPageProfileForm() {
@@ -335,13 +336,15 @@ function ProfileAvatar({
   name: string;
   sizeClassName: string;
 }) {
-  if (imageUrl) {
+  const normalizedImageUrl = normalizeProfileImageUrl(imageUrl);
+
+  if (normalizedImageUrl) {
     return (
       <span
         aria-label={`${name} 프로필 이미지`}
         className={`${sizeClassName} inline-block shrink-0 rounded-full bg-cover bg-center`}
         role="img"
-        style={{ backgroundImage: `url(${imageUrl})` }}
+        style={{ backgroundImage: `url(${normalizedImageUrl})` }}
       />
     );
   }
