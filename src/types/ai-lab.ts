@@ -84,8 +84,8 @@ export const SAMPLE_IMAGES: SampleImage[] = [
   },
   {
     key: "sample_4",
-    name: "자동차 부품 공장 화재현장 연기",
-    description: "대전 대덕구 3공단 대형화재",
+    name: "상주영천고속도로 차량사고 후 화재",
+    description: "상주영천고속도로 차량사고 화재",
     ext: "png",
   },
 ];
@@ -217,28 +217,29 @@ export const SAMPLE_RESULTS: Record<string, DetectResults> = {
       ],
     },
   },
-  // event (21) — 자동차 부품 공장 화재현장 연기
+  // event — 자동차 부품 공장 화재현장 연기
   sample_4: {
     "rt-detr": {
       inference_ms: 22.25,
       fps: 44.9,
       detections: [
-        { label: "SMOKE", confidence: 0.5557, bbox: [0.0056, 0.0000, 0.9944, 0.2656] },
-        { label: "SMOKE", confidence: 0.5541, bbox: [0.0099, 0.0000, 0.9901, 0.2661] },
+        { label: "FIRE", confidence: 0.88, bbox: [0.3348, 0.5157, 0.1281, 0.1536] },
+        { label: "SMOKE", confidence: 0.86, bbox: [0.2563, 0.0006, 0.2800, 0.5241] },
       ],
     },
     yolov8: {
       inference_ms: 9.62,
       fps: 104.0,
       detections: [
-        { label: "SMOKE", confidence: 0.5944, bbox: [0.8436, 0.0070, 0.1564, 0.2472] },
+        { label: "FIRE", confidence: 0.85, bbox: [0.3384, 0.5233, 0.1215, 0.1462] },
       ],
     },
     yolov11: {
       inference_ms: 11.92,
       fps: 83.9,
       detections: [
-        { label: "SMOKE", confidence: 0.4086, bbox: [0.8417, 0.0055, 0.1583, 0.2549] },
+        { label: "FIRE", confidence: 0.59, bbox: [0.3343, 0.5140, 0.1269, 0.1555] },
+        { label: "SMOKE", confidence: 0.27, bbox: [0.2014, 0.0717, 0.2782, 0.4590] },
       ],
     },
   },
