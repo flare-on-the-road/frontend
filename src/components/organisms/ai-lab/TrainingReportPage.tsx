@@ -97,12 +97,12 @@ function DataTable({
               <div
                 key={j}
                 className={`border-r-2 border-warm-200 px-4 py-3 text-base last:border-r-0 dark:border-slate-600 ${j === 0
-                    ? row.highlight
-                      ? "font-black text-flare-600 dark:text-flare-400"
-                      : "font-black text-slate-900 dark:text-cream-50"
-                    : row.highlight
-                      ? "font-semibold text-flare-600 dark:text-flare-400"
-                      : "font-semibold text-slate-500 dark:text-warm-300"
+                  ? row.highlight
+                    ? "font-black text-flare-600 dark:text-flare-400"
+                    : "font-black text-slate-900 dark:text-cream-50"
+                  : row.highlight
+                    ? "font-semibold text-flare-600 dark:text-flare-400"
+                    : "font-semibold text-slate-500 dark:text-warm-300"
                   }`}
               >
                 {cell}
@@ -299,8 +299,8 @@ export function TrainingReportPage() {
           >
             <div className="space-y-6">
               <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                본 프로젝트의 채택 기준은 단순 mAP가 아니다. <strong className="text-slate-900 dark:text-cream-50">
-                  오탐 억제와 연기 조기 탐지</strong>라는 두 가지 운영 요건에 부합하는 모델을 선택하는 것이 목적이다.
+                본 프로젝트의 채택 기준은 단순 mAP가 아니다.<br /> <strong className="text-slate-900 dark:text-cream-50">
+                  오탐 억제와 연기 조기 탐지</strong>라는 두 가지 운영 요건에 부합하는 모델을 선택하는 것이 목적이다.<br />
                 이 기준에서 RT-DETRv2는 다음 세 가지 근거로 채택되었다.
               </p>
 
@@ -328,14 +328,14 @@ export function TrainingReportPage() {
                   <div
                     key={item.tag}
                     className={`overflow-hidden rounded-lg border-2 ${item.highlight
-                        ? "border-flare-500"
-                        : "border-warm-200 dark:border-slate-600"
+                      ? "border-flare-500"
+                      : "border-warm-200 dark:border-slate-600"
                       }`}
                   >
                     <div
                       className={`flex items-center gap-3 border-b-2 px-5 py-3 ${item.highlight
-                          ? "border-flare-500 bg-flare-500/10"
-                          : "border-warm-200 bg-warm-100 dark:border-slate-600 dark:bg-slate-700"
+                        ? "border-flare-500 bg-flare-500/10"
+                        : "border-warm-200 bg-warm-100 dark:border-slate-600 dark:bg-slate-700"
                         }`}
                     >
                       <span className={`text-sm font-black ${item.highlight ? "text-flare-600 dark:text-flare-400" : "text-slate-700 dark:text-warm-300"}`}>
@@ -353,7 +353,7 @@ export function TrainingReportPage() {
               <InfoBox>
                 <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
                   <strong className="text-slate-900 dark:text-cream-50">중요:</strong> 본 시스템의 목적이
-                  단순 화재 탐지였다면 YOLO 계열이 속도 측면에서 더 적합했을 것이다.
+                  단순 화재 탐지였다면 YOLO 계열이 속도 측면에서 더 적합했을 것이다.<br />
                   <strong className="text-flare-600 dark:text-flare-400"> 오탐 억제와 연기 특화</strong>라는 요건이 없었다면
                   RT-DETRv2를 채택할 이유가 없었음을 명시한다.
                 </p>
@@ -424,7 +424,7 @@ export function TrainingReportPage() {
                     </p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
                       V3에서 가장 큰 문제였던 background→smoke 오탐 비율이 <strong className="text-flare-600 dark:text-flare-400">0.82 → 0.55로 감소</strong>했다.
-                      절대 건수 기준 629건. carlight 데이터 보강만으로 이 개선이 달성되었다는 점은,
+                      절대 건수 기준 629건. <br />carlight 데이터 보강만으로 이 개선이 달성되었다는 점은,
                       <strong className="text-slate-900 dark:text-cream-50"> 클래스 간 데이터 균형이 배경 오탐 억제에 간접적 효과</strong>를 가짐을 실증한다.
                       이는 본 시스템의 핵심 목표인 <strong className="text-slate-900 dark:text-cream-50">오탐 최소화</strong>에 대한 정량적 성과이다.
                     </p>
@@ -445,7 +445,7 @@ export function TrainingReportPage() {
                     </p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
                       V4에서 신규 발생한 유일한 유의미한 오탐. background를 carlight로 오탐한 절대 건수 <strong className="text-flare-600 dark:text-flare-400">388건</strong>,
-                      background 오탐 총량 대비 0.34의 비중. 자세한 원인과 대응은 12번 섹션 Limitation 2에서 다룬다.
+                      <br />background 오탐 총량 대비 0.34의 비중. 자세한 원인과 대응은 12번 섹션 Limitation 2에서 다룬다.
                     </p>
                   </InfoBox>
                 </div>
@@ -471,7 +471,7 @@ export function TrainingReportPage() {
           >
             <AbstractBox>
               V4는 V3 best.pth에서 Fine-tuning으로 학습되었다. Total Loss는 12.10 → 10.86으로 안정 감소했으나,
-              ep12 이후 val mAP는 plateau에 진입하는 <strong>underfitting 패턴</strong>이 관찰되었다.
+              <br />ep12 이후 val mAP는 plateau에 진입하는 <strong>underfitting 패턴</strong>이 관찰되었다.<br />
               이는 imgsz=640 기준의 구조적 상한에 근접했음을 시사하며, V5의 imgsz=1280 재학습 계획의 근거가 된다.
             </AbstractBox>
 
@@ -527,16 +527,16 @@ export function TrainingReportPage() {
                   <InfoBox>
                     <p className="mb-1 text-base font-black text-slate-900 dark:text-cream-50">ep 0~12 — 빠른 적응 구간</p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                      Fine-tuning 초기, V3 사전학습 표현이 유지된 상태에서 carlight 신규 데이터 분포에 빠르게 적응하였다.
+                      Fine-tuning 초기, V3 사전학습 표현이 유지된 상태에서 carlight 신규 데이터 분포에 빠르게 적응하였다.<br />
                       mAP@50 0.914 → 0.944로 상승.
                     </p>
                   </InfoBox>
                   <InfoBox>
                     <p className="mb-1 text-base font-black text-slate-900 dark:text-cream-50">ep 12~49 — Plateau 및 Underfitting</p>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                      Train Loss는 12.0 → 10.86으로 계속 감소하였으나 val mAP는 상승을 멈추었다.
+                      Train Loss는 12.0 → 10.86으로 계속 감소하였으나 val mAP는 상승을 멈추었다.<br />
                       이는 <strong className="text-flare-600 dark:text-flare-400">imgsz=640 기준에서 모델이 학습 가능한 상한에 근접</strong>했음을 의미한다.
-                      에폭 추가만으로는 성능 향상이 어려우며, 구조적 개선(고해상도 재학습)이 요구된다.
+                      <br />에폭 추가만으로는 성능 향상이 어려우며, 구조적 개선(고해상도 재학습)이 요구된다.
                     </p>
                   </InfoBox>
                 </div>
@@ -552,9 +552,9 @@ export function TrainingReportPage() {
             subtitle="test_300 동일 기준 — carlight 보강의 정확한 효과 측정"
           >
             <AbstractBox>
-              V3와 V4는 서로 다른 val 셋(133장 vs 1,406장)으로 학습되었기 때문에 val 지표의 직접 비교는 불가능하다.
-              두 버전을 공정하게 비교할 수 있는 유일한 기준은 <strong>독립 테스트셋 test_300</strong>이다.
-              test_300 결과, carlight AP@50이 <strong>+0.450</strong> 향상되었으며, fire/smoke 성능은 유지되어
+              V3와 V4는 서로 다른 val 셋(133장 vs 1,406장)으로 학습되었기 때문에 val 지표의 직접 비교는 불가능하다.<br />
+              두 버전을 공정하게 비교할 수 있는 유일한 기준은 <strong>독립 테스트셋 test_300</strong>이다.<br />
+              test_300 결과, carlight AP@50이 <strong>+0.450</strong> 향상되었으며,<br /> fire/smoke 성능은 유지되어
               <strong>기존 클래스 성능을 희생하지 않은 개선</strong>임이 확인되었다.
             </AbstractBox>
 
@@ -589,7 +589,7 @@ export function TrainingReportPage() {
                 <InfoBox className="mt-4">
                   <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
                     <strong className="text-slate-900 dark:text-cream-50">해석:</strong>
-                    carlight 클래스만 보강했음에도 소형 객체 AP 전반이 4.6배 향상되었다. 이는
+                    carlight 클래스만 보강했음에도 소형 객체 AP 전반이 4.6배 향상되었다. <br />이는
                     <strong className="text-flare-600 dark:text-flare-400"> 클래스 간 데이터 균형이 모델의 표현 능력 전체에 영향을 미친다</strong>는
                     가설을 정량적으로 뒷받침한다.
                   </p>
@@ -657,8 +657,8 @@ export function TrainingReportPage() {
               <InfoBox>
                 <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
                   <strong className="text-slate-900 dark:text-cream-50">운영 함의:</strong>
-                  fire의 threshold 0.70까지 Recall 0.991 유지 특성은 안전 시스템에 이상적이다.
-                  threshold를 높여 오탐을 줄여도 미탐이 발생하지 않는다는 것은,
+                  fire의 threshold 0.70까지 Recall 0.991 유지 특성은 안전 시스템에 이상적이다.<br />
+                  threshold를 높여 오탐을 줄여도 미탐이 발생하지 않는다는 것은,<br />
                   <strong className="text-flare-600 dark:text-flare-400"> 화재 알림의 신뢰도와 완전성을 동시에 확보</strong>할 수 있음을 의미한다.
                 </p>
               </InfoBox>
@@ -694,7 +694,7 @@ export function TrainingReportPage() {
               </div>
 
               <p className="text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
-                각 케이스의 상세 분석은 08~11번 섹션에서 다룬다. 모든 케이스에서 모델 표시 순서는
+                각 케이스의 상세 분석은 08~11번 섹션에서 다룬다. <br />모든 케이스에서 모델 표시 순서는
                 <strong className="text-slate-700 dark:text-warm-200"> YOLOv8-l → YOLOv11-l → RT-DETRv2 V3 → RT-DETRv2 V4</strong>로 통일하였다.
               </p>
             </div>

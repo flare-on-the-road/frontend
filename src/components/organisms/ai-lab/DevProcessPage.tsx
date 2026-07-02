@@ -88,16 +88,19 @@ function FlowArrow({ label }: { label?: string }) {
 function DataTable({
   headers,
   rows,
+  colWidths,
 }: {
   headers: string[];
   rows: Array<{ cells: string[]; highlight?: boolean }>;
+  colWidths?: string;
 }) {
   const cols = headers.length;
+  const gridCols = colWidths ?? `repeat(${cols}, minmax(0,1fr))`;
   return (
     <div className="overflow-hidden rounded-lg border-2 border-warm-200 dark:border-slate-600">
       <div
         className="border-b-2 border-warm-200 bg-warm-100 dark:border-slate-600 dark:bg-slate-700"
-        style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))` }}
+        style={{ display: "grid", gridTemplateColumns: gridCols }}
       >
         {headers.map((h) => (
           <div
@@ -113,7 +116,7 @@ function DataTable({
           key={i}
           className={`border-t-2 border-warm-200 dark:border-slate-600 ${row.highlight ? "bg-flare-500/10" : "bg-cream-50 dark:bg-slate-900"
             }`}
-          style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))` }}
+          style={{ display: "grid", gridTemplateColumns: gridCols }}
         >
           {row.cells.map((cell, j) => (
             <div
@@ -207,8 +210,8 @@ export function DevProcessPage() {
               <div>
                 <SubTitle>터널 환경의 특수성과 한계</SubTitle>
                 <p className="text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
-                  터널은 AI 화재 탐지에 있어 가장 까다로운 환경 중 하나입니다. 연기 경계가 불분명하고, 차량 전조등·후미등이
-                  화염과 시각적으로 유사하며, 조명과 반사광이 끊임없이 모델을 속입니다.
+                  터널은 AI 화재 탐지에 있어 가장 까다로운 환경 중 하나입니다. <br />연기 경계가 불분명하고, 차량 전조등·후미등이
+                  화염과 시각적으로 유사하며, <br />조명과 반사광이 끊임없이 모델을 속입니다.
                 </p>
               </div>
 
@@ -247,9 +250,10 @@ export function DevProcessPage() {
                   <FlowArrow />
                   <FlowBox dashed>시스템 폐기 및 무용지물화</FlowBox>
                 </div>
+                <br />
                 <p className="mt-5 text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
                   <span className="font-black text-slate-900 dark:text-cream-50">오탐을 줄이는 것이 곧 가장 빠른 화재 대응</span>
-                  이라는 역설. 이것이 본 프로젝트의 출발점이자 모든 설계 결정의 기준이 되었습니다.
+                  이라는 역설.<br /> 이것이 본 프로젝트의 출발점이자 모든 설계 결정의 기준이 되었습니다.
                 </p>
               </div>
             </div>
@@ -267,6 +271,7 @@ export function DevProcessPage() {
                 <SubTitle>클래스 설계 및 의도</SubTitle>
                 <DataTable
                   headers={["클래스", "역할", "설계 의도"]}
+                  colWidths="1fr 1.5fr 2fr"
                   rows={[
                     { cells: ["fire", "즉각 알림 트리거", "고대비·고온 색상 탐지 특화"] },
                     { cells: ["smoke", "조기 경보 핵심", "경계 불명확, 최고 난이도 — 화재의 전조증상"] },
@@ -274,8 +279,8 @@ export function DevProcessPage() {
                   ]}
                 />
                 <p className="mt-4 text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
-                  carlight는 그 자체가 탐지 목적이 아닙니다. 터널 내 전조등·후미등이 fire/smoke로 오인되는 것을 막기 위한
-                  네거티브 보조 클래스로 설계되었으며, 단독 검출 시에는 알림을 발생시키지 않습니다.
+                  carlight는 그 자체가 탐지 목적이 아닙니다. <br />터널 내 전조등·후미등이 fire/smoke로 오인되는 것을 막기 위한
+                  네거티브 보조 클래스로 설계되었으며, <br />단독 검출 시에는 알림을 발생시키지 않습니다.
                 </p>
               </div>
 
@@ -283,6 +288,7 @@ export function DevProcessPage() {
                 <SubTitle>데이터 성장 과정 — V1 → V3 → V4</SubTitle>
                 <DataTable
                   headers={["버전", "이미지 수", "어노테이션", "핵심 변화"]}
+                  colWidths="0.5fr 1fr 1fr 2fr"
                   rows={[
                     { cells: ["V1", "1,330장", "2,513개", "베이스라인, 야외 환경 위주"] },
                     { cells: ["V3", "12,853장", "21,802개", "라벨 정제 + 야간 화재 도메인 보강"] },
@@ -347,7 +353,7 @@ export function DevProcessPage() {
                   </div>
                 </div>
                 <p className="mt-3 text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
-                  carlight 비중을 5% → 23.4%로 끌어올린 것은 단순한 양의 증가가 아닙니다.
+                  carlight 비중을 5% → 23.4%로 끌어올린 것은 단순한 양의 증가가 아닙니다.<br />
                   모델이 <span className="font-black text-slate-900 dark:text-cream-50">"이것은 화염이 아니다"</span>를
                   명확히 학습할 수 있도록 의도적으로 만든 균형입니다.
                 </p>
@@ -421,6 +427,7 @@ export function DevProcessPage() {
                 <SubTitle>두 번의 도메인 보강 — 같은 목표, 같은 방식</SubTitle>
                 <DataTable
                   headers={["단계", "보강 내용", "목적"]}
+                  colWidths="0.5fr 2fr 1fr"
                   rows={[
                     { cells: ["V3", "야간 화재 63장 × 5배 = 378장", "터널 도메인 적응"] },
                     { cells: ["V4", "carlight 전용 1,200장 직접 추가 라벨링", "오탐 억제 강화"], highlight: true },
@@ -480,7 +487,7 @@ export function DevProcessPage() {
                 />
                 <InfoBox className="mt-5">
                   <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    한 클래스의 정밀한 데이터 보강이 <span className="font-black text-flare-600 dark:text-flare-400">다른 클래스의 오탐까지 줄였습니다</span>.
+                    한 클래스의 정밀한 데이터 보강이 <span className="font-black text-flare-600 dark:text-flare-400">다른 클래스의 오탐까지 줄였습니다</span>.<br />
                     오탐 억제는 단일 클래스 튜닝이 아닌, <span className="font-black text-slate-900 dark:text-cream-50">데이터 전체 구성의 문제</span>입니다.
                   </p>
                 </InfoBox>
@@ -526,8 +533,8 @@ export function DevProcessPage() {
               <div>
                 <SubTitle>왜 RT-DETRv2인가 — 연기는 화재의 전조다</SubTitle>
                 <p className="mb-4 text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
-                  화재 탐지에서 가장 중요한 신호는 무엇일까요? <span className="font-black text-slate-900 dark:text-cream-50">불꽃이 아니라 연기입니다.</span>
-                  연기가 보이는 순간이 화재 초기 대응의 골든 타임이며, 이 단계를 놓치면 인명 피해로 직결됩니다.
+                  화재 탐지에서 가장 중요한 신호는 무엇일까요?<br /> <span className="font-black text-slate-900 dark:text-cream-50">불꽃이 아니라 연기입니다.</span>
+                  연기가 보이는 순간이 화재 초기 대응의 골든 타임이며, <br />이 단계를 놓치면 인명 피해로 직결됩니다.
                 </p>
                 <InfoBox>
                   <p className="mb-3 text-base font-black text-slate-900 dark:text-cream-50">연기의 특성</p>
@@ -545,7 +552,7 @@ export function DevProcessPage() {
                     ))}
                   </ul>
                   <p className="mt-4 text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    이런 객체를 정확히 탐지하려면 <span className="font-black text-flare-600 dark:text-flare-400">국소적인 특징이 아니라 전역적인 문맥</span>을 봐야 합니다.
+                    이런 객체를 정확히 탐지하려면 <span className="font-black text-flare-600 dark:text-flare-400">국소적인 특징이 아니라 전역적인 문맥</span>을 봐야 합니다.<br />
                     이것이 Transformer 기반의 RT-DETRv2를 채택한 핵심 이유입니다.
                   </p>
                 </InfoBox>
@@ -601,8 +608,8 @@ export function DevProcessPage() {
               <div>
                 <SubTitle>NMS-free 구조의 현실과 정직한 대응</SubTitle>
                 <p className="mb-4 text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
-                  RT-DETRv2는 이론상 NMS 후처리가 불필요한 End-to-End 구조입니다. 그러나 실제 추론에서는 학습이 완전히 수렴되지 않은
-                  상태에서 동일 객체에 여러 쿼리가 반응해 중복 bbox가 발생하는 현상이 관찰되었습니다.
+                  RT-DETRv2는 이론상 NMS 후처리가 불필요한 End-to-End 구조입니다. <br />그러나 실제 추론에서는 학습이 완전히 수렴되지 않은
+                  상태에서 동일 객체에 여러 쿼리가 반응해 <br />중복 bbox가 발생하는 현상이 관찰되었습니다.
                 </p>
                 <DataTable
                   headers={["후처리 설정", "값", "역할"]}
@@ -612,9 +619,9 @@ export function DevProcessPage() {
                   ]}
                 />
                 <p className="mt-4 text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
-                  NMS-free의 완전한 장점은 희석되었지만, 쿼리 수가
+                  NMS-free의 완전한 장점은 희석되었지만, <br />쿼리 수가
                   <span className="font-black text-slate-900 dark:text-cream-50"> 300개로 제한</span>되어 있어 YOLO 대비 NMS 연산
-                  부담은 여전히 현저히 낮습니다. 이 점은 정직하게 기록합니다.
+                  부담은 여전히 현저히 낮습니다. <br />이 점은 정직하게 기록합니다.
                 </p>
               </div>
             </div>
@@ -642,6 +649,7 @@ export function DevProcessPage() {
                 <SubTitle>파이프라인 3단계</SubTitle>
                 <DataTable
                   headers={["단계", "구성 요소", "역할"]}
+                  colWidths="0.5fr 1.5fr 2fr"
                   rows={[
                     { cells: ["1단계", "RT-DETRv2 (5FPS 샘플링)", "CCTV 영상에서 fire/smoke/carlight 1차 탐지"] },
                     { cells: ["2단계", "VLM 재검증 (이벤트 발견 시 트리거)", "컨텍스트 기반 재판단 및 오탐 필터링"], highlight: true },
@@ -665,7 +673,7 @@ export function DevProcessPage() {
                 />
                 <p className="mt-3 text-sm font-semibold leading-6 text-slate-400 dark:text-warm-300">
                   carlight 단독 검출은 무시되지만, fire/smoke와 동시 검출되는 경우는 confidence와 무관하게 VLM
-                  재검증으로 강제 이동시켜 <span className="font-black text-slate-700 dark:text-warm-300">등화류 혼동발 오탐을 한 번 더 차단</span>합니다.
+                  재검증으로 강제 이동시켜<br /> <span className="font-black text-slate-700 dark:text-warm-300">등화류 혼동발 오탐을 한 번 더 차단</span>합니다.
                 </p>
               </div>
 
@@ -759,7 +767,7 @@ export function DevProcessPage() {
                 </div>
                 <InfoBox>
                   <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    V3 val(133장, carlight 81개)은 표본 부족으로 carlight 성능을 <span className="font-black text-flare-600 dark:text-flare-400">과대평가</span>하고 있었습니다.
+                    V3 val(133장, carlight 81개)은 표본 부족으로 carlight 성능을 <span className="font-black text-flare-600 dark:text-flare-400">과대평가</span>하고 있었습니다.<br />
                     독립 test_300 평가를 통해서야 carlight AP가 실제로는 <span className="font-black text-flare-600 dark:text-flare-400">0.454에 불과</span>하다는 사실이 드러났습니다.
                     <br />
                     <br />
@@ -771,7 +779,7 @@ export function DevProcessPage() {
               <div className="space-y-4">
                 <SubTitle>V4 개선 — carlight 정조준 보강</SubTitle>
                 <MediaBox
-                  src="/ai-lab/dev-process/06_carlight_labeling.png"
+                  src="/ai-lab/dev-process/06_carlight_labeling.jpg"
                   alt="carlight 직접 라벨링 작업"
                   caption="Roboflow에서 carlight 전용 데이터 1,200장 직접 라벨링 — 외부 데이터에 의존하지 않고 약점을 직접 보강"
                 />
@@ -786,7 +794,7 @@ export function DevProcessPage() {
                 />
                 <InfoBox>
                   <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    carlight 데이터만 보강했는데 small 객체 AP와 background → smoke 오탐까지 함께 개선되었습니다.
+                    carlight 데이터만 보강했는데 small 객체 AP와 background → smoke 오탐까지 함께 개선되었습니다.<br />
                     <span className="font-black text-slate-900 dark:text-cream-50"> 클래스 간 데이터 균형이 모델 전체 품질에 영향을 미친다</span>는 점이 입증된 결과입니다.
                   </p>
                 </InfoBox>
@@ -818,22 +826,23 @@ export function DevProcessPage() {
                 <InfoBox>
                   <h4 className="mb-2 text-base font-black text-flare-600 dark:text-flare-400">① Underfitting 패턴</h4>
                   <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    ep12 이후 train loss는 계속 감소하지만 val mAP는 정체되는 패턴이 관찰되었습니다.
+                    ep12 이후 train loss는 계속 감소하지만 val mAP는 정체되는 패턴이 관찰되었습니다.<br />
                     imgsz=640 기준에서 모델이 학습 가능한 상한에 근접했음을 의미하며, 에폭 추가만으로는 성능 향상이 어렵습니다.
-                    <span className="font-black text-slate-900 dark:text-cream-50"> 구조적 개선이 필요</span>합니다.
+                    <span className="font-black text-slate-900 dark:text-cream-50"> <br />구조적 개선이 필요</span>합니다.
                   </p>
                 </InfoBox>
                 <InfoBox>
-                  <h4 className="mb-2 text-base font-black text-flare-600 dark:text-flare-400">② background → carlight 오탐 (0.34)</h4>
+                  <h4 className="mb-2 text-base font-black text-flare-600 dark:text-flare-400">② 원거리 광범위 연기 미탐</h4>
                   <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                    V3에는 없던 신규 이슈입니다. carlight val 데이터가 81개 → 624개로 확장되면서 다양한 배경 조건에서의 오탐이 드러났습니다.
-                    <span className="font-black text-slate-900 dark:text-cream-50"> 이 한계 발견 자체가 평가 데이터 보강의 효과</span>입니다.
+                    event 21에서 배경에 존재하는 대형 연기 기둥을 V4가 놓치는 사례가 확인되었습니다.<br />
+                    극단적 원거리·저해상도 조건에서의 연기 학습 데이터가 부족했던 것이 원인으로 추정됩니다.<br />
+                    <span className="font-black text-slate-900 dark:text-cream-50"> 연기 조기 탐지가 본 시스템의 핵심 목적</span>인 만큼, 이 한계는 V5에서 최우선으로 다룰 과제입니다.
                   </p>
                 </InfoBox>
                 <MediaBox
-                  src="/ai-lab/dev-process/06_carlight_false_positive.jpg"
-                  alt="라이트 반사광 carlight 오탐 예시"
-                  caption="V4 신규 한계 사례 — 터널 바닥 반사광이 carlight로 오탐된 케이스"
+                  src="/ai-lab/dev-process/06_distant_smoke_miss.jpg"
+                  alt="원거리 광범위 연기 미탐 예시"
+                  caption="V4 신규 한계 사례 — 배경의 대형 연기를 놓친 event 21 케이스"
                 />
               </div>
             </div>
@@ -884,14 +893,14 @@ export function DevProcessPage() {
                 <div className="space-y-4">
                   <InfoBox>
                     <h4 className="mb-2 text-base font-black text-flare-600 dark:text-flare-400">
-                      ① background → carlight 오탐(0.34) 잡기 — 야간 반사광 Hard Negative 수집
+                      ① 원거리·광역 연기 미탐 잡기 — smoke 도메인 다양화
                     </h4>
                     <ul className="space-y-2">
                       {[
-                        "터널 바닥 반사광, 벽면 반사광, 젖은 노면 반사 등 carlight로 오탐된 실제 배경 프레임 수집",
-                        "이 프레임들을 carlight 라벨 없이 배경 이미지로 학습 데이터에 추가",
-                        "모델에게 '이런 빛은 carlight가 아니다'를 명시적으로 학습시킴",
-                        "라벨링 방식: 자동화 불가, V4 추론 결과의 false positive 프레임을 직접 골라내는 노가다 필요",
+                        "야외 원거리 검은 연기, 광역 확산 연기, 저해상도 입력 케이스 직접 수집",
+                        "실제 화재 사고 CCTV 영상에서 원거리 연기 프레임 큐레이션",
+                        "V3 야간 화재 증강(63×5)과 같은 방식으로 smoke의 어려운 케이스를 정조준 보강",
+                        "연기 조기 탐지가 본 시스템의 핵심 목적인 만큼 최우선 과제",
                       ].map((item) => (
                         <li key={item} className="flex items-start gap-3">
                           <span className="mt-2 size-1.5 shrink-0 rounded-full bg-flare-500" />
@@ -919,27 +928,11 @@ export function DevProcessPage() {
                   </InfoBox>
                   <InfoBox>
                     <h4 className="mb-2 text-base font-black text-flare-600 dark:text-flare-400">
-                      ③ smoke 약점(검은 연기·광역 확산) 잡기 — 도메인 다양화
+                      ③ 평가 데이터셋 확장 검토
                     </h4>
                     <ul className="space-y-2">
                       {[
-                        "야외 검은 연기, 광역 확산 연기, 저해상도 입력 케이스 직접 수집",
-                        "V3 야간 화재 증강(63×5)과 같은 방식으로, smoke의 어려운 케이스를 정조준 보강",
-                      ].map((item) => (
-                        <li key={item} className="flex items-start gap-3">
-                          <span className="mt-2 size-1.5 shrink-0 rounded-full bg-flare-500" />
-                          <span className="text-base font-semibold text-slate-600 dark:text-warm-300">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </InfoBox>
-                  <InfoBox>
-                    <h4 className="mb-2 text-base font-black text-flare-600 dark:text-flare-400">
-                      ④ 평가 데이터셋 확장 검토
-                    </h4>
-                    <ul className="space-y-2">
-                      {[
-                        "test 셋 확장을 통해 야간 반사광·검은 연기·소형 객체 케이스를 균등 분포로 포함",
+                        "test 셋 확장을 통해 원거리 연기·검은 연기·소형 객체 케이스를 균등 분포로 포함",
                         "평가 단계에서 새로운 약점을 조기 발견하는 체계 마련",
                         "→ 02번 교훈 ③(평가 데이터셋 노가다)의 지속적 실천",
                       ].map((item) => (
@@ -957,7 +950,7 @@ export function DevProcessPage() {
                 <SubTitle>carlight 클래스 확장 구상 — 오탐 억제에서 교통 관제로</SubTitle>
                 <p className="mb-4 text-base font-semibold leading-7 text-slate-500 dark:text-warm-300">
                   carlight는 V4 보강을 통해 단순 오탐 억제용 네거티브 클래스를 넘어
-                  <span className="font-black text-slate-900 dark:text-cream-50"> 풍부한 데이터 자산</span>이 되었습니다.
+                  <span className="font-black text-slate-900 dark:text-cream-50"> 풍부한 데이터 자산</span>이 되었습니다.<br />
                   이 자산을 활용해 다음과 같은 기능 확장을 구상 중입니다.
                 </p>
                 <div className="space-y-2">
@@ -972,7 +965,7 @@ export function DevProcessPage() {
                 <div className="mt-5">
                   <InfoBox>
                     <p className="text-base font-semibold leading-7 text-slate-600 dark:text-warm-300">
-                      V5 데이터 구성 단계에서 carlight 데이터를 더 다양한 각도·조도·차량 밀집도 조건으로 확장하면,
+                      V5 데이터 구성 단계에서 carlight 데이터를 더 다양한 각도·조도·차량 밀집도 조건으로 확장하면,<br />
                       <span className="font-black text-slate-900 dark:text-cream-50"> 오탐 억제 강화와 교통 관제 기능 확장을 한 번에 준비</span>할 수 있습니다.
                     </p>
                   </InfoBox>
